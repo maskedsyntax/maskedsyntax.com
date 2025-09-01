@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>MaskedSyntax</title>
+        <style>
+            @import url("https://fonts.googleapis.com/css2?family=Nosifer&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap");
+            body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 20px;
+                background: #fff;
+                color: #000;
+                line-height: 1.6;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+            }
+            .container {
+                font-family: "Space Mono", monospace;
+                max-width: 700px;
+                width: 100%;
+                padding: 20px;
+                /*border: 1px solid #000;*/
+                text-align: center;
+            }
+            h1 {
+                font-family: "Nosifer", sans-serif;
+                font-weight: 400;
+                font-style: normal;
+                font-size: 2em;
+                margin-bottom: 10px;
+            }
+            p {
+                font-size: 1.1em;
+                margin: 10px 0;
+            }
+            .quote {
+                font-style: italic;
+                font-size: 1em;
+                margin-top: 10px;
+            }
+            .links {
+                margin-top: 20px;
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            .links a {
+                display: block;
+                padding: 10px;
+                border: 1px solid #000;
+                text-decoration: none;
+                color: #000;
+                transition: background 0.3s;
+            }
+            .links a:hover {
+                background: #f0f0f0;
+            }
+            a {
+                text-decoration: underline;
+                color: #000;
+            }
+            @media (min-width: 600px) {
+                .links {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+            }
+            @media (max-width: 400px) {
+                h1 {
+                    font-size: 1.5em;
+                }
+                p {
+                    font-size: 1em;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>MaskedSyntax</h1>
+            <p>
+                ML & compiler dev <br />
+                Research <a href="http://cachevector.com">@CacheVector</a>
+                <br />
+                Shipping open-source tools @Growvth <br />
+                Creating
+                <a href="http://blip-lang.com">blip-lang.com</a>
+            </p>
+            <br />
+            <div class="links">
+                <a href="https://github.com/maskedsyntax" target="_blank"
+                    >GitHub: <br />
+                    maskedsyntax</a
+                >
+                <a href="https://x.com/aftaab___" target="_blank"
+                    >X: <br />
+                    @aftaab___</a
+                >
+                <a
+                    href="https://www.linkedin.com/in/aftaabsiddiqui/"
+                    target="_blank"
+                    >LinkedIn: <br />
+                    Aftaab Siddiqui</a
+                >
+                <a
+                    href="https://bsky.app/profile/maskedsyntax.bsky.social"
+                    target="_blank"
+                    >Bluesky: <br />
+                    maskedsyntax.bsky.social</a
+                >
+            </div>
+        </div>
+    </body>
+</html>
