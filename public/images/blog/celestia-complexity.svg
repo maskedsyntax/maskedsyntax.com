@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="360" viewBox="0 0 960 360" fill="none">
+  <rect width="960" height="360" fill="#111827"/>
+  <line x1="100" y1="300" x2="860" y2="300" stroke="#374151"/>
+  <line x1="100" y1="60" x2="100" y2="300" stroke="#374151"/>
+  <polyline points="100,290 250,260 420,210 600,140 860,70" fill="none" stroke="#F87171" stroke-width="3"/>
+  <polyline points="100,290 250,275 420,250 600,220 860,185" fill="none" stroke="#34D399" stroke-width="3"/>
+  <text x="760" y="80" fill="#F87171" font-family="monospace" font-size="13">O(N²)</text>
+  <text x="760" y="175" fill="#34D399" font-family="monospace" font-size="13">O(N log N)</text>
+  <text x="100" y="35" fill="#93A5FF" font-family="monospace" font-size="18">Complexity Trend</text>
+</svg>

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="360" viewBox="0 0 960 360" fill="none">
+  <rect width="960" height="360" fill="#0F172A"/>
+  <rect x="70" y="130" width="170" height="90" rx="8" fill="#1E293B" stroke="#334155"/>
+  <rect x="300" y="130" width="170" height="90" rx="8" fill="#1E293B" stroke="#334155"/>
+  <rect x="530" y="130" width="170" height="90" rx="8" fill="#1E293B" stroke="#334155"/>
+  <rect x="760" y="130" width="130" height="90" rx="8" fill="#1E293B" stroke="#334155"/>
+  <text x="155" y="182" fill="#E2E8F0" font-family="monospace" font-size="14" text-anchor="middle">Browser Data</text>
+  <text x="385" y="182" fill="#E2E8F0" font-family="monospace" font-size="14" text-anchor="middle">Argon2id KDF</text>
+  <text x="615" y="182" fill="#E2E8F0" font-family="monospace" font-size="14" text-anchor="middle">AES-256-GCM</text>
+  <text x="825" y="182" fill="#E2E8F0" font-family="monospace" font-size="14" text-anchor="middle">Git Snapshot</text>
+  <path d="M240 175H300" stroke="#93A5FF" stroke-width="3"/>
+  <path d="M470 175H530" stroke="#93A5FF" stroke-width="3"/>
+  <path d="M700 175H760" stroke="#93A5FF" stroke-width="3"/>
+  <text x="70" y="45" fill="#93A5FF" font-family="monospace" font-size="18">Zero-Knowledge Sync Pipeline</text>
+</svg>

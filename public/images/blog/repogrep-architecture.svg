@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="420" viewBox="0 0 960 420" fill="none">
+  <rect width="960" height="420" fill="#0F172A"/>
+  <rect x="40" y="60" width="180" height="90" rx="8" fill="#1E293B" stroke="#334155"/>
+  <text x="130" y="112" fill="#E2E8F0" font-family="monospace" font-size="16" text-anchor="middle">Repo Roots</text>
+  <rect x="300" y="60" width="180" height="90" rx="8" fill="#1E293B" stroke="#334155"/>
+  <text x="390" y="112" fill="#E2E8F0" font-family="monospace" font-size="16" text-anchor="middle">Parallel Walk</text>
+  <rect x="560" y="60" width="180" height="90" rx="8" fill="#1E293B" stroke="#334155"/>
+  <text x="650" y="112" fill="#E2E8F0" font-family="monospace" font-size="16" text-anchor="middle">Regex Scan</text>
+  <rect x="300" y="250" width="180" height="90" rx="8" fill="#1E293B" stroke="#334155"/>
+  <text x="390" y="302" fill="#E2E8F0" font-family="monospace" font-size="16" text-anchor="middle">Context Extract</text>
+  <rect x="560" y="250" width="180" height="90" rx="8" fill="#1E293B" stroke="#334155"/>
+  <text x="650" y="302" fill="#E2E8F0" font-family="monospace" font-size="16" text-anchor="middle">Three Pane UI</text>
+  <path d="M220 105H300" stroke="#93A5FF" stroke-width="3"/>
+  <path d="M480 105H560" stroke="#93A5FF" stroke-width="3"/>
+  <path d="M650 150V250" stroke="#93A5FF" stroke-width="3"/>
+  <path d="M560 295H480" stroke="#93A5FF" stroke-width="3"/>
+  <text x="40" y="32" fill="#93A5FF" font-family="monospace" font-size="18">RepoGrep Request Flow</text>
+</svg>

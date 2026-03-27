@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="380" viewBox="0 0 960 380" fill="none">
+  <rect width="960" height="380" fill="#0F172A"/>
+  <circle cx="210" cy="190" r="120" stroke="#334155" stroke-width="2"/>
+  <circle cx="210" cy="190" r="8" fill="#F59E0B"/>
+  <circle cx="290" cy="140" r="6" fill="#93A5FF"/>
+  <circle cx="150" cy="120" r="5" fill="#34D399"/>
+  <circle cx="180" cy="250" r="5" fill="#F87171"/>
+  <rect x="430" y="70" width="430" height="240" rx="10" fill="#111827" stroke="#334155"/>
+  <line x1="470" y1="270" x2="820" y2="270" stroke="#374151"/>
+  <line x1="470" y1="110" x2="470" y2="270" stroke="#374151"/>
+  <polyline points="470,240 560,210 650,180 740,155 820,140" fill="none" stroke="#93A5FF" stroke-width="3"/>
+  <text x="430" y="35" fill="#93A5FF" font-family="monospace" font-size="18">Barnes-Hut Approximation Impact</text>
+  <text x="520" y="305" fill="#E5E7EB" font-family="monospace" font-size="13">Particle count</text>
+  <text x="370" y="190" fill="#E5E7EB" font-family="monospace" font-size="13" transform="rotate(-90 370 190)">Compute cost</text>
+</svg>

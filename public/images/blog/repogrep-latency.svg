@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="360" viewBox="0 0 960 360" fill="none">
+  <rect width="960" height="360" fill="#111827"/>
+  <line x1="100" y1="300" x2="860" y2="300" stroke="#374151"/>
+  <line x1="100" y1="60" x2="100" y2="300" stroke="#374151"/>
+  <rect x="180" y="150" width="120" height="150" fill="#60A5FA"/>
+  <rect x="360" y="200" width="120" height="100" fill="#34D399"/>
+  <rect x="540" y="235" width="120" height="65" fill="#34D399"/>
+  <rect x="720" y="120" width="120" height="180" fill="#F87171"/>
+  <text x="240" y="325" fill="#E5E7EB" font-family="monospace" font-size="14" text-anchor="middle">Cold no-index</text>
+  <text x="420" y="325" fill="#E5E7EB" font-family="monospace" font-size="14" text-anchor="middle">Warm no-index</text>
+  <text x="600" y="325" fill="#E5E7EB" font-family="monospace" font-size="14" text-anchor="middle">Indexed warm</text>
+  <text x="780" y="325" fill="#E5E7EB" font-family="monospace" font-size="14" text-anchor="middle">Reindex cost</text>
+  <text x="100" y="36" fill="#93A5FF" font-family="monospace" font-size="18">Latency Profile (lower is better)</text>
+</svg>

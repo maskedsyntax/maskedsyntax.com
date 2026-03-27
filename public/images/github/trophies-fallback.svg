@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="220" viewBox="0 0 1200 220" fill="none">
+  <rect width="1200" height="220" fill="#111827"/>
+  <text x="32" y="44" fill="#A5B4FC" font-family="monospace" font-size="22">GitHub Trophies (Fallback)</text>
+  <g fill="#E5E7EB" font-family="monospace" font-size="18">
+    <text x="32" y="92">MaskedSyntax</text>
+    <text x="32" y="126">- Multi-language tool builder</text>
+    <text x="32" y="156">- Active open-source projects</text>
+    <text x="32" y="186">- Systems + ML experimentation</text>
+  </g>
+  <g transform="translate(870,38)">
+    <rect x="0" y="0" width="70" height="70" rx="8" fill="#1F2937" stroke="#374151"/>
+    <rect x="86" y="0" width="70" height="70" rx="8" fill="#1F2937" stroke="#374151"/>
+    <rect x="172" y="0" width="70" height="70" rx="8" fill="#1F2937" stroke="#374151"/>
+    <text x="35" y="42" text-anchor="middle" fill="#F59E0B" font-size="30"></text>
+    <text x="121" y="42" text-anchor="middle" fill="#93C5FD" font-size="30">™</text>
+    <text x="207" y="42" text-anchor="middle" fill="#86EFAC" font-size="30"></text>
+  </g>
+</svg>
