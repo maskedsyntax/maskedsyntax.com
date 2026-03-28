@@ -2,6 +2,7 @@
 import { ArrowRight } from "lucide-vue-next";
 import ProjectCard from "../components/ProjectCard.vue";
 import SectionShell from "../components/SectionShell.vue";
+import SocialLinks from "../components/SocialLinks.vue";
 import { shippedWork } from "../data/ecosystem";
 import { profile } from "../data/profile";
 import { currentlyBuilding, featuredProjects } from "../data/projects";
@@ -29,17 +30,18 @@ import { currentlyBuilding, featuredProjects } from "../data/projects";
         </div>
       </div>
       <p class="mb-5 text-sm text-[var(--muted)] sm:text-base">{{ profile.role }}</p>
-      <p class="mb-4 max-w-4xl text-sm sm:text-base">
-        I build local-first developer tools and research-heavy systems where implementation quality matters more than trend chasing.
+      <p class="mb-4 max-w-4xl text-sm sm:text-base">{{ profile.homeIntro }}</p>
+      <p class="max-w-4xl text-sm text-[var(--muted)] sm:text-base">{{ profile.homeFocus }}</p>
+      <p class="mt-5 max-w-4xl border-l-2 border-[var(--accent)]/40 pl-4 text-sm leading-relaxed text-[var(--muted)] sm:text-base">
+        {{ profile.homeTwoSitesNote }}
+        <a
+          :href="profile.links.website"
+          target="_blank"
+          rel="noreferrer"
+          class="font-medium text-[var(--accent)] hover:underline"
+        >aftaab.xyz</a>.
       </p>
-      <p class="max-w-4xl text-sm text-[var(--muted)] sm:text-base">
-        Current focus: search infrastructure, high-performance tooling, and practical ML workflows that close the gap between papers and production.
-      </p>
-      <div class="mt-8 flex flex-wrap gap-3 text-sm">
-        <a class="rounded-sm border border-[var(--border)] bg-[var(--card)] px-4 py-2 hover:border-[var(--accent)]" :href="profile.links.github" target="_blank" rel="noreferrer">GitHub</a>
-        <a class="rounded-sm border border-[var(--border)] bg-[var(--card)] px-4 py-2 hover:border-[var(--accent)]" :href="profile.links.cachevector" target="_blank" rel="noreferrer">CacheVector</a>
-        <RouterLink class="rounded-sm border border-[var(--border)] bg-[var(--card)] px-4 py-2 hover:border-[var(--accent)]" to="/blog">Blog</RouterLink>
-      </div>
+      <SocialLinks />
     </article>
 
   </section>
