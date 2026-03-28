@@ -1,72 +1,88 @@
 ---
-title: "ColorSnap: Perceptual Distance Isn’t Euclidean"
-date: "2025-09-22"
-tags: ["experiments", "color", "algorithms"]
-summary: "I tried matching colors in RGB and got ugly results. CIEDE2000 fixed the vibe — at the cost of more math."
-reading_time: "13 min"
+title: "ColorSnap: nearest named color in OpenCV"
+date: "2025-10-24"
+tags: ["experiments", "cpp", "opencv", "color"]
+summary: "colorsnap loads a CSV of named RGB values, lets you click a webcam frame, and labels the closest entry using L1 distance in RGB space. Hex formatting is a tiny helper."
+reading_time: "5 min"
 ---
 
-“Find the closest palette color” sounds trivial until you do it in **RGB distance** and humans laugh at you. Our eyes don’t treat red/green/blue axes as equal perceptual steps — so I went down the rabbit hole of **ΔE** metrics.
+I wanted a desk toy that answers "what is this color called?" without opening a browser. ColorSnap is C++17 with OpenCV for capture and drawing, plus a CSV under `assets/data/colors.csv`. The pipeline is: load table, grab frame, on click sample RGB, find minimum Manhattan distance to a dataset row, draw a label.
 
-## What went wrong with naive distance
+## Palette load, hex, and nearest match
 
-```text
-RGB distance:  sqrt(dr² + dg² + db²)
-Problem:       equidistant in RGB ≠ equidistant to your eye
+`load_colors` reads CSV rows through `read_csv`, skips short rows, and maps columns into integers. Column layout is fixed: identifiers, human name, hex string, then `r g b`. Malformed lines with fewer than six fields are skipped silently so one bad row does not crash the picker. I regenerate `colors.csv` from spreadsheets during palette experiments; keeping hex and RGB in sync prevents mismatches between displayed hash and triplet.
+
+```cpp
+std::vector<ColorEntry> load_colors(const std::string filename)
+{
+    auto raw = read_csv(filename);
+    std::vector<ColorEntry> dataset;
+
+    for (const auto &row : raw)
+    {
+        if (row.size() < 6)
+            continue;
+
+        dataset.push_back(
+            {row[0], row[1], row[2], std::stoi(row[3]), std::stoi(row[4]), std::stoi(row[5])});
+    }
+
+    return dataset;
+}
 ```
 
-Two grays can look identical while the numeric distance says “far.”
+`rgb2hex` prints uppercase hex with `snprintf`; an overload for a small `RGB` struct keeps call sites readable.
 
-## Pipeline sketch
-
-```text
-sRGB hex ──► linearize ──► Lab space ──► ΔE2000 ──► pick min
+```cpp
+std::string rgb2hex(int r, int g, int b)
+{
+    char hexcol[8];
+    snprintf(hexcol, sizeof(hexcol), "#%02X%02X%02X", r, g, b);
+    return std::string(hexcol);
+}
 ```
 
-Lab isn’t perfect, but it’s **closer** to “human nearness” than raw RGB.
+`getColor` walks the whole table. For a few hundred named colors that is fine. Distance is L1 in RGB. Using `<=` instead of `<` means ties pick the last matching entry in file order; for deterministic ties, sort the dataset or compare names as a secondary key.
 
-## Naive RGB (wrong tool, drawn anyway)
+```cpp
+std::pair<std::string, int> getColor(const RGB &rgb, std::vector<ColorEntry> &dataset)
+{
+    int minDist = INT_MAX;
+    std::string found;
+    for (const auto &entry : dataset)
+    {
+        int distance = abs(rgb.r - entry.r) + abs(rgb.g - entry.g) + abs(rgb.b - entry.b);
+        if (distance <= minDist)
+        {
+            minDist = distance;
+            found = entry.color;
+        }
+    }
 
-This is the thing I tried first — fast, and misleading:
-
-```python
-import math
-
-def rgb_dist(a: tuple[int, int, int], b: tuple[int, int, int]) -> float:
-    dr, dg, db = a[0] - b[0], a[1] - b[1], a[2] - b[2]
-    return math.sqrt(dr * dr + dg * dg + db * db)
-
-palette = [(20, 24, 30), (40, 44, 52), (180, 190, 200)]
-target = (33, 38, 48)
-best = min(palette, key=lambda c: rgb_dist(c, target))
+    return std::make_pair(found, minDist);
+}
 ```
 
-Two grays can sit “far” in RGB while looking identical on a monitor — **gamma** and perception aren’t linear.
+Perceptual uniformity would need Lab or OKLab and a different metric. This project stayed in RGB because the CSV is RGB and the goal was a quick label, not a thesis on color science. If I extend it, I would convert sample and palette to a linear space before distance, then document the choice in the README.
 
-## Where ΔE plugs in
+## UI, webcam quirks, and build
 
-I don’t paste the full CIEDE2000 here (pages of terms). In practice I either call a tested library or vendor reference code, then lock **golden tests**:
+`ClickData` stores whether the user clicked, pixel coordinate, sampled `RGB`, and a pointer to the current frame. Mouse handlers map widget coordinates into image space before reading BGR from `cv::Mat`. Coordinates from `cv::setMouseCallback` are in image pixels before any display scaling.
 
-```python
-# shape of the API I want — implementation behind it
-def delta_e_2000(lab1: tuple[float, float, float], lab2: tuple[float, float, float]) -> float:
-    ...
-```
+`drawRoundedRectangle` and `drawLabel` wrap OpenCV primitives so the overlay reads like a sticker; text color follows background luminance so labels stay readable on light and dark regions. White balance and auto exposure skew samples; I mention huge distance in the status line so I do not trust the label blindly. Auto exposure shifts colors between frames; averaging a small neighborhood around the click is an experiment not checked into the minimal reader, which uses a single pixel for simplicity.
 
-Palette colors get converted **once**; each user pick runs comparisons only against those cached Lab tuples.
+`main.cpp` opens the default camera, registers the mouse callback, and spins until quit. Each frame draws the overlay if a color was picked last click. `build.sh` wraps CMake with warnings enabled; OpenCV 4 and fmt are required. Packaging copies `assets/` next to the executable so relative paths keep working. A future `--csv` flag exists in sketches; checked-in `main` defaults to `assets/data/colors.csv`.
 
-## Why not CIE76?
+## After
 
-CIE76 (`ΔE` in Lab) is faster but **less accurate** in blues. For a palette snapper where users notice hue shifts, I swallowed the complexity of **CIEDE2000**.
+ColorSnap is small enough to read in one sitting. The pieces worth copying are the CSV schema, the L1 loop, and the hex helper. Everything else is OpenCV ceremony you will rewrite per project anyway.
 
-## Implementation note
+I keep a printed color sheet on my desk for sanity checks: if the webcam says "navy" for something I know is teal, the problem is white balance, not the CSV. The toy is useful for naming captures in bug reports where a screenshot alone loses the exact swatch.
 
-You don’t need to implement the standard from scratch unless you want pain — **test vectors** from published papers / reference implementations save weeks.
+`read_csv` returning vector rows is the smallest interface that survived three refactors. Anything fancier pulled in dependencies I did not want for a hundred-line tool.
 
-## Learnings
+CMake `find_package(OpenCV)` failures on fresh Linux installs are still the number one support message from friends. Pinning OpenCV 4 in the README is worth more than clever detection code in `CMakeLists.txt`.
 
-- Color science is half **math**, half **psychophysics** — expect hand-wavy thresholds.
-- Always show **before/after** swatches — numbers won’t convince you alone.
-- Performance: cache Lab for palette entries; compute once.
+If I ever ship a second palette for colorblind-friendly labels, it will be a second CSV and a runtime toggle, not a pile of `#ifdef`s. Data-driven naming scales better than hardcoded enums for this toy.
 
-ColorSnap is a small tool, but it changed how I think about **“close enough”** in UI work.
+Quitting with `q` versus clicking the window close button exercised different teardown paths once; both now release the `VideoCapture` so `/dev/video0` is not left busy on Linux after a crash during dev.

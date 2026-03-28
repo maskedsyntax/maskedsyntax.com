@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "highlight.js": "^11.11.1",
     "lucide-vue-next": "^0.542.0",
     "markdown-it": "^14.1.0",
     "simple-icons": "^16.13.0",

@@ -1,75 +1,45 @@
 ---
-title: "OpAmp Layout: Aspect Ratios That Actually Manufacture"
+title: "Op-amp layout: aspect ratio as a DRC conversation"
 date: "2025-10-30"
 tags: ["ml", "vlsi", "layout"]
-summary: "I chased symmetric aesthetics until DRC explained that manufacturability beats pretty rectangles. Lesson learned the loud way."
-reading_time: "13 min"
+summary: "No repo for this one: it is notes from a university layout lab. The through line is that manufacturability beats pretty symmetry on paper."
+reading_time: "5 min"
 ---
 
-Analog layout looks like drawing until you meet **DRC** (design rules). My first op-amp floorplan had “balanced” shapes that were **illegal** or fragile under process variation. This note is part therapy, part checklist.
+Analog layout looks like drawing until the design rule check deck fires. My first op-amp floorplan had mirrored shapes that looked balanced in the editor and failed spacing rules the moment I ran the real PDK. This post is not tied to a single open source file. It is what I wish I had written **before** I spent a night nudging polysilicon by hand.
 
-## What DRC is really asking
+## Rules, aspect ratio, and symmetry that survives the fab
 
-```text
- min width / spacing
-  │
-  ├── prevents opens/shorts
-  └── matches fab tolerances
-```
-
-Rules aren’t suggestions — they encode **physics + lithography limits**.
-
-## Aspect ratio intuition
-
-Long skinny resistors **meander** for a reason: you need value **and** matching — sometimes folding beats a straight bar.
+Minimum width and spacing rules exist because fabs have measurable tolerances. A line that is 0.13 microns wide on screen might print as a broken strip. A via that barely encloses metal might open under etch variation. The deck encodes that as thousands of checks. A clean report is the only definition of "done," not how the screenshot looks.
 
 ```text
-   bad for matching          better: interdigitated pair
-   ----------------          -----------------------------
-   |-------|                 |/\/\/\/\/|
+width(poly)   >= minimum from PDK
+space(metal1) >= minimum from PDK
+via enclosure >= enclosure on all sides
 ```
 
-Matching pairs want **symmetry** under the same gradients — not just mirrored shapes in the viewer.
+Think of violations like compiler errors: you do not argue with `M1.S.1 : spacing 0.12 um < 0.14 um required at (x, y)`. You move geometry, re-run, repeat. Eyeballing distances on screen is a poor substitute for the deck because snapping grids lie.
 
-## DRC checks as “code”
+Long skinny resistors are not aesthetic choices. Sheet resistance times length over width sets value. When you need tens of kiloohms in a small cell, you meander. Matching pairs want the same orientation, the same surroundings, and often interdigitation so process gradients affect both sides equally. Two rectangles that mirror in the viewer but sit over different well gradients are not a matched pair in silicon. "Asymmetric surroundings" means one device sees more metal fill on the left because you routed a fat bus past it. That changes capacitance to substrate and to neighbors. Simulation with ideal models will miss it until you extract parasitics from the real layout.
 
-PDK rules show up as constraints you can’t hand-wave. Conceptually:
+I sketch matching devices before I touch the tool: same width, same length, same neighbor density on three sides. Capacitor arrays and current mirrors need the same attention as diff pairs. A via stack that shifts one side changes matching as much as width tweaks. Antenna rules on floating poly fragments were another surprise: tiny slivers you cannot see without zoom carry real yield risk. Density fill steps need planning so dummy metal does not break matching. Instructors shared photos of rounded corners and necking where poly narrowed below minimum width. Those photos stuck more than rule tables.
 
-```text
-width(poly)   >= 0.15 um
-space(metal1) >= 0.14 um
-via enclosure >= 0.05 um each side
-```
+## Schematic dreams versus extracted reality
 
-In a deck, that becomes thousands of checks. A **DRC report** is like a compiler error list — you iterate until clean:
+Schematic simulation with ideal op-amps proves topology. Layout plus extraction proves bandwidth and stability margins once parasitic capacitors appear on sensitive nodes. If the layout ignores fringe capacitance on the input pair, phase margin in your head is fiction. We ran AC sweeps on extracted netlists after layout. Bandwidth shifted by tens of percent versus schematic-only estimates. That single lab justified the boring via rules.
 
-```text
-# invented example output shape
-M1.S.1 : 0.12um < 0.14um required at (12.4, 8.1)
-POLY.W.1 : poly width 0.13um < 0.15um at (3.2, 1.0)
-```
+## Lab habits that still help
 
-Fixing isn’t “make it prettier” — it’s **move geometry** until the report is empty.
+Start from PDK defaults for layers and grids. Run DRC early and often, not only at tapeout. Review with someone else: your eyes stop seeing notch violations after hours. A classmate caught a notch I stared past for an hour. Second pairs of eyes are not optional on dense analog cells. Document which rule deck version you used. I screenshot DRC clean reports and attach them to lab submissions so when a rule regresses later, you have proof it once passed.
 
-## A tiny “matching pair” layout sketch (ASCII)
+DRC proves geometry. LVS proves connectivity. Passing DRC but failing LVS still ships broken silicon. We used commercial layout editors with PDK techfiles from the department; export to GDSII matched what teaching assistants ran. Open-source PDKs such as SkyWater exist now; the checklist is the same when layer names change.
 
-```text
-   device A          device B
-   |||||||||         |||||||||
-   |||||||||         |||||||||   same orientation, same surroundings
-   ---------         ---------
-```
+Outside the PDK I used Python notebooks to plot resistor ratios against drawn length. The notebook is not in this workspace, but the habit stuck: **measure geometry, do not guess**.
 
-Asymmetric surroundings (different nearby metal density) **mismatch** devices even if polygons look mirrored in the editor.
+## After the course
 
-## Simulation vs layout
+I am still early in analog layout. The mindset shift was to stop treating the canvas as graphic design. It is constrained geometry under physics. Aspect ratio is one knob among many, and the fab rules are the hard boundary.
 
-You can simulate ideal components — manufacturing connects them with **parasitics**. If your layout ignores capacitance to substrate, your bandwidth dreams evaporate.
+Tapeout stories from industry guests landed harder than any slide deck: the cost of a metal short versus the cost of a missed timing closure. School labs compress that into DRC counts, but the emotional lesson is the same. Clean decks are how you sleep.
 
-## Learnings
-
-- Start from **process design kit** defaults; inventing your own grid is ego.
-- **Review with peers** — your eyes stop seeing notch violations.
-- Pretty screenshots ≠ yield.
-
-I’m still a beginner at analog layout, but I stopped treating it as graphic design.
+I keep old GDS exports in cold storage not for nostalgia but because comparing layer counts between semesters shows how fast PDK revisions move. The vocabulary stays stable even when the numbers change.

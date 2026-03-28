@@ -1,88 +1,79 @@
 ---
-title: "SoundSnatch: TUI UX Over Raw yt-dlp"
+title: "SoundSnatch: yt-dlp JSON behind Bubble Tea"
 date: "2025-11-02"
 tags: ["devtools", "go", "tui", "yt-dlp"]
-summary: "yt-dlp can do everything. My job was to make the happy path obvious and the failure path readable — Bubble Tea helped."
-reading_time: "14 min"
+summary: "Shell aliases around yt-dlp rot. SoundSnatch is the UI layer: JSON in, human errors out, downloads without me relearning flags every quarter."
+reading_time: "5 min"
 ---
 
-I like `yt-dlp`. I don’t like memorizing twenty flags when I just want **this playlist** in **this folder** with a sane filename. SoundSnatch is a Bubble Tea wrapper — opinionated where it matters, transparent where it doesn’t.
+I used to wrap `yt-dlp` in shell aliases for "just give me mp3." Upstream changed defaults often enough that my muscle memory lied. The real pain was not the flags themselves. It was discovering I had pasted a **playlist** after the download started, or that a site wanted cookies, or that stderr was screaming while stdout still held a usable JSON blob. SoundSnatch is a small Charm Bubble Tea app whose job is to **show title and duration before bytes move**, then get out of the way.
 
-## UX goals
+## Structured fetch is the contract
 
-- **Pick target** (URL) without thinking.
-- **Pick folder** without typing paths if possible.
-- Show **progress** that doesn’t spam scrollback.
-- Surface errors as **human sentences**, not Python tracebacks.
-
-## Data flow
-
-```text
-  URL field
-     │
-     ▼
-  validate ──► queue jobs ──► spawn yt-dlp child
-                    │              │
-                    │              └── stream stderr/stdout
-                    ▼
-              progress Model ──► view
-```
-
-The model tracks rows: pending, running, done, failed.
-
-## Why not shell out blindly?
-
-Children can hang, formats can fail, networks flap. The TUI needs **structured status**:
+`yt-dlp -J` is the spine. `fetchInfoCmd` tries the `yt-dlp` binary on PATH, then falls back to `python3 -m yt_dlp` when people only installed the module. Args include quiet flags, `--flat-playlist`, optional `--cookies-from-browser` when the model stores a browser name.
 
 ```go
-type Job struct {
-    ID       string
-    URL      string
-    Status   string // human readable
-    Progress float64
+cmd := exec.Command("yt-dlp", args...)
+if _, err := exec.LookPath("yt-dlp"); err != nil {
+    cmd = exec.Command("python3", append([]string{"-m", "yt_dlp"}, args...)...)
 }
 ```
 
-Rendering is just mapping structs to lipgloss blocks.
-
-## Bubble Tea shape (simplified)
+Parsing is deliberately forgiving: stdout and stderr fill buffers, then **JSON wins over exit code**. `yt-dlp` often exits non-zero while still printing an object because it hated one format line.
 
 ```go
-type model struct {
-    jobs   []Job
-    cursor int
-    err    string
-}
+runErr := cmd.Run()
+outStr := strings.TrimSpace(stdout.String())
 
-func (m model) Init() tea.Cmd { return nil }
-
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-    switch msg := msg.(type) {
-    case tea.KeyMsg:
-        switch msg.String() {
-        case "q":
-            return m, tea.Quit
-        case "enter":
-            return m, startDownload(&m)
+if outStr != "" {
+    var info map[string]interface{}
+    if err := json.Unmarshal([]byte(outStr), &info); err == nil {
+        title, _ := info["title"].(string)
+        durFloat, _ := info["duration"].(float64)
+        return infoFetchedMsg{
+            title:    title,
+            duration: durFloat,
         }
-    case progressMsg:
-        m.jobs[msg.idx].Progress = msg.pct
     }
-    return m, nil
 }
 
-func (m model) View() string {
-    // lipgloss.JoinVertical + status rows
-    return ""
+if runErr != nil {
+    errMsgStr := strings.TrimSpace(stderr.String())
+    if errMsgStr == "" {
+        errMsgStr = runErr.Error()
+    }
+    return errMsg{err: fmt.Errorf("could not fetch info: %s", errMsgStr)}
 }
+
+return errMsg{err: fmt.Errorf("could not fetch info: no output from yt-dlp")}
 ```
 
-`progressMsg` comes from a goroutine watching `yt-dlp` output — the TUI stays **single-threaded** for rendering.
+Search uses the same resolver pattern: `ytsearch5:` with newline-delimited JSON objects fed into a bubbles list. I do not pretend stderr is structured. Title and duration from `-J` are stable; anything I might parse from live download output is best-effort and version-sensitive.
 
-## Learnings
+## Bubble Tea because blocking draw is rude
 
-- **Defaults** beat options — expose advanced flags behind an “Advanced” collapse, not the first screen.
-- Streaming parser for yt-dlp output beats regexing everything — but a little regex is fine.
-- Users blame the **UI** when downloads fail — show exit codes and last lines.
+`main` uses `tea.WithAltScreen()`. Long subprocess work returns messages into `Update` instead of holding the render goroutine hostage. `ui.go` owns the model: URL and path inputs, search lists, spinner states, `stateFetching`, `stateSearching`, `stateDownloading`, plus file-picker flows. Each state picks which sub-model eats keys first so the URL field does not swallow input mid-download.
 
-Still polishing keyboard nav — but the core bet stands: **respect the underlying tool**, don’t reimplement it.
+Users blame the TUI when a site breaks. Showing stderr tails and exit codes in the status line turned vague "it is broken" reports into "upstream changed" reports. Debug builds can log argv; release builds stay quiet so pasted URLs do not land in shared scrollback.
+
+## Cookies, formats, packaging
+
+Membership sites need `--cookies-from-browser`; I surface browser choice in settings instead of hardcoding Chrome. After metadata fetch, format lists come from follow-up queries; caching per URL is future work. Disk full errors bubble from the child with the path that failed. README states ffmpeg is out of scope; binaries assume `yt-dlp` or Python plus `yt_dlp`.
+
+`main_test.go` only covers small URL helpers. The rest is manual when major `yt-dlp` versions ship. That is the honest maintenance cost of wrapping a moving target.
+
+Lipgloss styles match my other Charm apps on purpose: muscle memory for borders and padding beats novelty when you hop between tools in one session. Help text at the bottom of `View()` lists the few global shortcuts so discoverability survives the gap between uses. Bubble list widgets own arrows for results, formats, and browser pickers; text inputs keep typing until you tab away.
+
+`downloader.go` isolates subprocess invocation from `Update`; `types.go` keeps message structs small so refactors do not ripple through half the repo. Progress updates stay coarse because line-by-line stderr parsing rots across releases. I would rather under-promise smooth progress than ship a parser that breaks every Tuesday.
+
+## After
+
+SoundSnatch admits **yt-dlp owns the protocol**. My code owns spawning, parsing, and presenting. When JSON fields shift, I adjust `map` access or structs. That is still cheaper than reimplementing extractors and playing whack-a-mole with site changes.
+
+I keep returning to this tool when I want defaults without nested option screens. Paste URL, confirm metadata, pick output folder, walk away. The TUI is not the product; **fewer wrong downloads** is the product. Everything else is Charm plumbing and stubborn error strings.
+
+## Epilogue
+
+If you build something similar, budget time for upstream churn. The UI will look stable while the extractor layer moves underneath. That is the bargain you sign when you stop writing shell one-liners and start shipping a face for someone else's engine.
+
+I still reach for plain `yt-dlp` when scripting batch jobs; SoundSnatch is for the interactive path where confirmation saves embarrassment. Same engine, different stakes.

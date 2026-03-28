@@ -1,85 +1,64 @@
 ---
-title: "Celestia: From O(N^2) to O(N log N)"
-date: "2026-03-13"
-tags: ["ml", "simulation", "fortran", "barnes-hut"]
-summary: "I wanted pretty orbits without melting my laptop. Barnes-Hut + Velocity Verlet turned a toy into something I could actually run overnight."
-reading_time: "18 min"
+title: "Celestia: octree build in Fortran"
+date: "2025-10-12"
+tags: ["ml", "fortran", "n-body", "simulation"]
+summary: "Celestia is Newtonian gravity with Barnes-Hut. tree.f90 partitions bodies into eight octants and recurses until each leaf holds one particle."
+reading_time: "5 min"
 ---
 
-![Barnes-Hut Concept](/images/blog/celestia-barnes-hut.svg)
-
-Gravity is simple until it isn’t. Pairwise forces for N bodies scale like O(N²). At a few hundred particles you’re fine. At tens of thousands, you start **feeling** the quadratic — fans spin, progress bars lie, and you question your life choices.
-
-Celestia was my excuse to implement something I’d only read about: **Barnes-Hut** — group far-away mass into buckets so you don’t visit every pair.
-
-## What I wanted from the integrator
-
-Raw Euler steps explode energetically on long runs. I used **Velocity Verlet** — symplectic-ish, stable enough for orbits:
+Celestia is an N-body lab in Fortran with OpenMP, velocity Verlet integration, optional collisions, and CSV output for a web viewer. The Barnes-Hut speedup lives in `tree.f90`. Building the tree is the interesting code path: assign each body to an octant, allocate child arrays, recurse. Internal nodes aggregate mass and center of mass; leaves point at a single `body_t`.
 
 ```fortran
-! Velocity Verlet (per step)
-v_half = v + 0.5d0 * a * dt
-x_new = x + v_half * dt
-! compute a_new at x_new
-v_new = v_half + 0.5d0 * a_new * dt
+type :: node_t
+   real(dp), dimension(3) :: center = [0.0_dp, 0.0_dp, 0.0_dp]
+   real(dp) :: size = 0.0_dp
+   real(dp) :: mass = 0.0_dp
+   real(dp), dimension(3) :: com = [0.0_dp, 0.0_dp, 0.0_dp]
+   type(body_t), pointer :: body => null()
+   type(node_t), pointer, dimension(:) :: children => null()
+   logical :: is_leaf = .true.
+end type node_t
 ```
 
-Not fancy on paper. **Huge** in practice when you want rings that don’t drift into soup.
+`build_tree` is recursive: one body makes a leaf; otherwise split into eight octants using three bitwise tests against the node center, count bodies per bucket, allocate slices, recurse. I simulated all-pairs first; at a few hundred bodies the homework finished overnight. The tree homework was the first time complexity class matched a profiler graph I generated myself.
 
-## Barnes-Hut in a napkin sketch
+## Forces, softening, and OpenMP
 
-Build an octree. For each body, walk the tree:
+`physics.f90` applies gravitational softening to avoid singularities. `eps_sq` limits force spikes during close passes; tuning trades numerical stability against realism in dense cores. `main.f90` drives timesteps. OpenMP parallel regions spread the hot force loop across cores once the tree is built. The tree builds serially, then forces compute in parallel; trying to build in parallel without coloring invited races. Collisions merge bodies in `collisions.f90` when radii overlap, using the inelastic model from the README.
 
-- If a cell is far enough away (opening angle criterion), treat its total mass as a **single** attractor at its center of mass.
-- If it’s too close, recurse.
+## Integrators: Verlet versus RK4
 
-```text
-         root cell
-        /    |    \
-       /     |     \
-   near     far     far
-   bodies   lump    lump
-            as 1    as 1
-```
-
-You spend log-ish time per body *in friendly distributions* — way better than all-pairs.
-
-## Inner loop (still Fortran-shaped)
-
-Pairwise gravity for a subset (conceptually — real code uses tree walks):
+`main.f90` accepts `--integrator verlet` or `rk4`. Velocity Verlet is the default symplectic choice for long runs. RK4 appears in `integrate_rk4` inside `physics.f90`, rebuilding the Barnes-Hut tree at each stage when enabled:
 
 ```fortran
-! Naive inner pair — BH replaces this with tree traversal
-do i = 1, n
-  do j = i + 1, n
-    rij = r(:,j) - r(:,i)
-    dist2 = dot_product(rij, rij) + softening**2
-    invr = 1.0d0 / sqrt(dist2)
-    fij = G * m(i) * m(j) * rij * (invr**3)
-    a(:,i) = a(:,i) + fij / m(i)
-    a(:,j) = a(:,j) - fij / m(j)
-  end do
-end do
+subroutine integrate_rk4(bodies, root_info, G, theta, dt)
+    ! k1 = f(t, y)
+    do i = 1, n
+       k1_v(:, i) = bodies(i)%vel
+       k1_a(:, i) = bodies(i)%acc
+    end do
+    ! ... midpoint stages rebuild the tree via rebuild_tree_local ...
+end subroutine
 ```
 
-OpenMP parallelizes the **outer** `i` loop once the algorithm is safe — BH is where the complexity win lands.
+`compute_total_energy` and printed relative drift (as a fraction of initial total) sanity-check integrations: Verlet drift should stay bounded; RK4 may behave differently on long horizons. You can compare integrators in the terminal without plotting tools.
 
-## Results I could stare at
+## Output, viewer, and parameters
 
-![Complexity Trend](/images/blog/celestia-complexity.svg)
+`io_utils.f90` appends CSV rows with time, id, mass, position, and velocity per body. `export_binary` writes an unformatted stream when you want smaller snapshots and a matching Fortran reader. `to_js.py` converts CSV steps into a JS bundle a static viewer loads, so the Fortran core stays free of graphics dependencies and headless-friendly on clusters.
 
-The chart is really “look, it bends” — exact constants depend on how clustered your simulation is.
+`galaxy_step.csv` grows one row per body per recorded step. Softening length controls how close approaches behave; I sweep it when swapping initial conditions from `initial_conditions.f90`. `make` compiles with OpenMP flags from the Makefile. Optional timing hooks in `profiler.f90` wrap tree build and force evaluation when enabled; I compare Barnes-Hut against brute force on small N to verify the tree matches within epsilon.
 
-## Where I messed up early
+## After
 
-- **Softening** too small → scary accelerators at close range.
-- **Tree rebuild** every step vs amortized — profiling matters.
-- Forgetting that BH is an **approximation** — energy non-conservation shows up if you’re sloppy.
+Celestia is coursework-grade, not astrophysics production. The educational win is seeing **O(N log N)** tree build in a language people think is dead. Fortran's array syntax still fits scientific loops well.
 
-## Learnings
+Splitting visualization into Python and JS kept grading simple: TAs run the binary, inspect CSV or binary dumps, and only optionally open the viewer. Students who break the integrator still get partial credit on tree construction because those pieces are separable in the source tree.
 
-- Pretty physics beats fast wrong physics. Users (me) notice drift.
-- Fortran + OpenMP is still a cheat code for tight numeric loops.
-- Visualization isn’t vanity — it’s how you catch sign errors before they compound.
+I still reach for brute force on tiny N when I change force softening or collision rules. If the tree and the all-pairs reference disagree, I trust the slower answer until I find the bug in the multipole acceptance criterion, not the other way around.
 
-I’m not shipping a universe simulator — I’m shipping **confidence** that I understand the pipeline. That’s enough.
+The Barnes-Hut theta parameter is the usual knob: too large and multipole error shows up as drifting energy; too small and you paid for a tree walk that behaves like naive summation. I log max depth and leaf counts when debugging acceptance bugs so I can tell "tree is degenerate" from "integrator is unstable."
+
+Fortran gets a bad rap for IO; here IO is deliberately boring so the interesting code stays in `physics.f90` and `tree.f90`. That separation made code reviews faster: nobody argues about CSV column order in the same breath as octree splits.
+
+Collision handling is the other sanity check: merged bodies change mass budgets and can inject energy if the restitution model is sloppy. I treat collisions as optional in long galaxy runs because they turn debugging from "force math" into "event scheduling," which is a different course module. Toggling them off is the fastest way to isolate tree regressions when energy drifts and you are not sure whether to blame the integrator or contact events.

@@ -1,72 +1,87 @@
 ---
-title: "HARM: Modeling CPUs as Pure State Transforms"
+title: "HARM: ARM7 stepping as a pure state machine"
 date: "2025-11-26"
 tags: ["systems", "haskell", "emulation"]
-summary: "Writing an ARM7 emulator in Haskell felt silly until debugging became 'replay the state transition' instead of 'grep the globals'."
-reading_time: "15 min"
+summary: "HARM is a Haskell ARM7 toy: parse assembly, build an instruction map, resolve labels, then run `runProgram` from a fixed initial CPU. Purity is a debugging tool, not the goal."
+reading_time: "5 min"
 ---
 
-Emulators tempt you toward **giant structs** and `mut` everywhere. It works until you hit a bug where `CPSR` flags disagree with your mental model and you’re printf-debugging **hundreds** of instructions.
+I started HARM because printf-heavy C cores made it hard to answer "what should the flags be after this one instruction?" Haskell does not magically fix ARM semantics, but it forces me to pass an explicit `CPUState` through each step so I cannot "accidentally" reuse a stale register behind my back.
 
-HARM was my attempt to keep the CPU core **pure**: `State -> Instruction -> State` (modulo I/O edges).
+## From source file to resolved instruction map
 
-## The shape
-
-```text
-fetch ──► decode ──► execute ──► update PC / flags
-                         │
-                         └── optional memory side effects
-```
-
-In Haskell, bundling registers + memory into a single `CPUState` means the type checker yells when you forget a field update.
-
-## State monad (practically)
-
-You can thread state manually:
+`runFile` reads text, parses each line into `LineContent`, assembles a `Map` from address to `Instruction`, resolves labels, then runs `runProgram` and prints registers.
 
 ```haskell
-step :: CPUState -> (CPUState, SideEffects)
+runFile path = do
+    content <- readFile path
+    let lines' = lines content
+    let parsed = map parseLineContent lines'
+    case sequence parsed of
+        Left err -> putStrLn $ "Error parsing file:\n" ++ err
+        Right contents -> do
+            let (instMap, labelMap) = assemble contents
+            let resolvedInstMap = Map.map (resolveLabels labelMap) instMap
+            finalState <- runProgram resolvedInstMap initCPU
+            printRegisters finalState
 ```
 
-Or use `StateT` when you want sequencing without noisy plumbing. The **idea** matters more than the exact abstraction: **one instruction = one transition**.
-
-## A toy decode step (illustrative)
-
-Not the real ARM table — just the shape that helped me think:
+`assemble` walks the source once, increments the simulated PC by four per instruction (ARM word size in this teaching subset), and records label positions when a line is just a symbol.
 
 ```haskell
-import Data.Bits (shiftR, (.&.))
-
-data Instruction = Add Reg Reg Reg | Mov Reg Imm | Branch Cond Offset
-
-decode :: Word32 -> Maybe Instruction
-decode w
-  | opBits == 0x00 = Just (Add r1 r2 r3)
-  | opBits == 0x01 = Just (Mov r1 imm)
-  | otherwise      = Nothing
+assemble :: [Maybe LineContent] -> (Map.Map Word32 Instruction, Map.Map String Word32)
+assemble contents = go 0 Map.empty Map.empty contents
   where
-    opBits = w .&. 0xff
-    r1 = fromIntegral ((w `shiftR` 8) .&. 0xf)
+    go _ insts labels [] = (insts, labels)
+    go addr insts labels (Nothing : rest) = go addr insts labels rest
+    go addr insts labels (Just (LLabel name) : rest) =
+        go addr insts (Map.insert name addr labels) rest
+    go addr insts labels (Just (LInstruction inst) : rest) =
+        go (addr + 4) (Map.insert addr inst insts) labels rest
+```
+
+Branches can mention label text. After the first pass knows every address, `resolveLabels` rewrites to concrete immediates or calls `error` with a clear string. I prefer hard `error` during assembly over executing into nonsense.
+
+```haskell
+resolveLabels labels (B cond (TLabel name)) =
+    case Map.lookup name labels of
+        Just addr -> B cond (ImmAddr addr)
+        Nothing -> error $ "Undefined label: " ++ name
+```
+
+## Execution: pure steps, thin IO, condition codes
+
+The execute module defines what one instruction does to `CPUState`. I keep IO devices thin: the core is pure, and `runProgram` sequences steps in `IO` only where the syllabus needs syscalls or logging. The monad stack changed a few times; the invariant did not: **fetch, decode, execute** is always "take state, produce state."
+
+```haskell
+checkCondition :: Flags -> Condition -> Bool
+checkCondition flags cond = case cond of
+    AL -> True
+    EQ' -> zFlag flags
+    NE -> not (zFlag flags)
+    CS -> cFlag flags
+    CC -> not (cFlag flags)
+    MI -> nFlag flags
+    PL -> not (nFlag flags)
     -- ...
 ```
 
-If `decode` returns `Nothing`, I stop **before** execution — the PC trail stays clean.
+Keeping ALU and memory helpers pure means QuickCheck-style properties can compare against a reference simulator for opcodes I trust.
 
-## Debugging wins
+HARM is still a teaching core: ARM7 subset for coursework (data processing, branches, loads and stores we needed for labs). Flat word-addressed memory with a simple MMIO stub for UART-style I/O in advanced labs. Not cycle-accurate to any particular silicon; undefined opcodes stop with a clear error instead of silent drift.
 
-When something breaks:
+## Workflow: parser, tests, REPL, packaging
 
-```text
-BAD:  "somewhere in the last million cycles..."
-GOOD: "instruction X at PC=Y produced illegal flag Z"
-```
+`Parser.hs` accepts a small assembly syntax with labels and immediates; error messages include line numbers because students paste fifty-line files. `test.asm` and `hello.asm` are golden programs; after changing decode I rerun `harm test.asm` and diff register dumps. Running `harm` without arguments drops into a read-eval loop over single instructions for micro-step debugging. `harm.cabal` lists dependencies; Stack or cabal both work; README documents minimum GHC when it matters.
 
-You can snapshot `CPUState` and **diff** expectations.
+When flags disagree with QEMU, I diff register snapshots at the same PC. With mutable globals that workflow felt like archaeology. With a pure `step`, I re-run from the same snapshot until the divergence shrinks to a single opcode. For tough bugs I single-step beside QEMU with the same binary to see whether decode or execute is wrong.
 
-## Learnings
+If you clone it, start at `Parser.hs` for syntax sugar, then `Execute.hs` for semantics. `Main.hs` is glue you could replace with a test harness once the maps look right.
 
-- Purity isn’t virtue signaling — it’s **replayability**.
-- IO devices still need escape hatches; keep them **thin**.
-- Haskell performance is fine for learning-scale cores; optimize after correctness.
+## After
 
-I’m still wiring more ARM features, but the functional shell is why I haven’t rage-quit.
+The Haskell shell is why I still open the repo: assembly stays data, state stays explicit, and the type checker complains when I extend `Instruction` without updating decode.
+
+Teaching with HARM meant students could diff their register dump against mine byte for byte when the program was wrong. With a mutable C core, "it works on my machine" hid uninitialized state for longer than anyone admitted.
+
+I do not claim HARM is a fast emulator. It is a legible one. Performance would mean another codebase; correctness and explainability were the whole point of the exercise.

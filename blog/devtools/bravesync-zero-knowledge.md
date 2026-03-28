@@ -1,88 +1,75 @@
 ---
-title: "BraveSync Lite: Zero-Knowledge Browser Backup"
+title: "BraveSync Lite: encrypt before GitHub sees bytes"
 date: "2026-02-20"
 tags: ["devtools", "go", "security", "encryption"]
-summary: "I wanted cloud-shaped sync without handing plaintext to a server I don't run. Argon2 + AES-GCM + a private GitHub repo was the smallest story I could trust."
-reading_time: "17 min"
+summary: "Private repo is not the same as unreadable bytes. This tool is the smallest envelope I trusted for browser profile blobs on Git."
+reading_time: "5 min"
 ---
 
 ![Encryption Pipeline](/images/blog/bravesync-pipeline.svg)
 
-“Just sync my bookmarks” sounds easy until you decide **the server is untrusted**. I wasn’t trying to invent a new crypto primitive — I wanted a boring pipeline:
+I wanted backups that could sit in a GitHub repo without shipping plaintext browser profiles. Git is a sync mechanism I already use; the missing piece was ciphertext at rest in history, not a new hosted vault with another login. Not because I think GitHub staff read my trees for fun, but because **forks happen, visibility toggles happen, and laptops get stolen**. BraveSync Lite is a small Go utility that encrypts before bytes leave the machine: random salt, random nonce, Argon2id to stretch a passphrase, AES-256-GCM to authenticate ciphertext. The host sees opaque blobs. That is **client-side encryption** in the plain English sense. It is not a formal zero-knowledge proof system, and I am tired of marketing words that pretend those are the same thing.
 
-1. Derive keys from a passphrase **client-side only**.
-2. Encrypt blobs before they ever leave the machine.
-3. Push ciphertext to a dumb remote (GitHub API in my prototype).
+## The envelope
 
-## Threat model (honest version)
-
-- Protect data **at rest** on GitHub from casual reads.
-- Protect against **accidental** leaks (misconfigured repo, fork confusion).
-- Not trying to defeat a nation-state — just **raise the bar** above “grep the API.”
-
-## KDF + AEAD shape
-
-```text
-passphrase ──► Argon2id ──► key material ──► AES-256-GCM ──► ciphertext
-                     │                              │
-                     └── salt stored alongside ─────┘
-```
-
-Argon2id because it’s the modern default for password-derived keys. AES-GCM because it’s **authenticated** — tampering fails loudly.
-
-## What the Go side roughly looks like
-
-Conceptually:
+`Encrypt` generates salt and nonce from `crypto/rand`, derives a thirty-two byte key, seals with GCM, and concatenates `salt || nonce || ciphertext` (tag included because `Seal` appends it). `Decrypt` checks lengths, slices, derives the same key, and `Open`s. Tampering fails at authentication, not later as subtle corruption.
 
 ```go
-salt := make([]byte, 16)
-rand.Read(salt)
+func Encrypt(plaintext []byte, password string) ([]byte, error) {
+    salt := make([]byte, SaltLen)
+    if _, err := io.ReadFull(rand.Reader, salt); err != nil {
+        return nil, fmt.Errorf("failed to generate salt: %w", err)
+    }
 
-key := argon2.IDKey([]byte(passphrase), salt, 3, 64*1024, 4, 32)
-block, _ := aes.NewCipher(key)
-gcm, _ := cipher.NewGCM(block)
-nonce := make([]byte, gcm.NonceSize())
-rand.Read(nonce)
+    key := deriveKey([]byte(password), salt)
+    defer utils.ZeroMem(key)
 
-ct := gcm.Seal(nil, nonce, plaintext, nil)
-// persist: salt || nonce || ct
-```
-
-(Real code wires errors, chunking, and manifest files — the idea is the envelope.)
-
-## Decrypt path (symmetric)
-
-```go
-func decrypt(passphrase string, salt, nonce, ct []byte) ([]byte, error) {
-    key := argon2.IDKey([]byte(passphrase), salt, 3, 64*1024, 4, 32)
     block, err := aes.NewCipher(key)
     if err != nil {
-        return nil, err
+        return nil, fmt.Errorf("failed to create cipher: %w", err)
     }
+
     gcm, err := cipher.NewGCM(block)
     if err != nil {
-        return nil, err
+        return nil, fmt.Errorf("failed to create gcm: %w", err)
     }
-    return gcm.Open(nil, nonce, ct, nil)
+
+    nonce := make([]byte, NonceLen)
+    if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+        return nil, fmt.Errorf("failed to generate nonce: %w", err)
+    }
+
+    ciphertext := gcm.Seal(nil, nonce, plaintext, nil)
+
+    result := append(salt, nonce...)
+    result = append(result, ciphertext...)
+
+    return result, nil
 }
 ```
 
-On disk I store `salt || nonce || ciphertext` in a single blob per object — parsers are tedious but **debuggable**.
+Constants are boring on purpose: sixteen-byte salt, twelve-byte nonce, Argon2 time one, sixty-four KiB memory, four threads. More work hardens offline guessing and hurts laptops; less work feels irresponsible for passphrases humans actually type. `ZeroMem` on the derived key is hygiene, not a guarantee against every memory attack. It still beats leaving keys in heap pages forever.
 
-## Why GitHub?
+## Threat model without theater
 
-It’s a **dumb blob store with history** I already have API keys for. The sync tool never needs plaintext on the remote — only ciphertext commits.
+This stops casual reads of repo contents. It does not stop someone who has your passphrase, your unlocked session, or a keylogger. It does not fix bad access control. Encryption makes some mistakes hurt less; it does not replace policy.
 
-## Footguns I stepped on
+Passphrase loss equals data loss. I say that in help text because someone will ignore it once and learn the hard way. Restore prompts through TUI helpers so echo is off; I snapshot destination profile dirs before unattended scripts overwrite anything. Large trees may split into chunk blobs so diffs stay smaller; manifests record names and hashes. Rotation would mean new salts and re-encrypting everything; I have not automated that because this is still primarily a personal safety net.
 
-- Reusing nonces with GCM is catastrophic — **random nonces** per object.
-- Argon2 params must be tuned to your machine — too aggressive and backups feel “broken.”
-- Restoring is UX-hard: people forget **passphrases** more often than crypto breaks.
+## CLI shape
 
-## Learnings
+`cmd/config.go` uses `urfave/cli` to capture paths and tokens and persist settings. Tokens belong in env when automation allows, not only in files. `cmd/backup` walks configured paths, encrypts payloads, pushes through the GitHub API wrapper. `cmd/restore` reverses after passphrase entry. I sanity-check ciphertext SHAs between runs when scripts go quiet; silent no-ops usually mean filters excluded the world.
 
-- “Zero-knowledge” in marketing ≠ formal ZK proofs. Here it means **keys never leave the client**.
-- Crypto UX is the hard part: rotation, recovery, and “what if I lose my laptop?”
-- Pipelines are easier to trust when you can draw them on one screen — hence the diagram.
+Git LFS may matter for huge blobs depending on host limits. Regular git is fine for smallish secrets. Naming in the slug still says "zero-knowledge" for history; the body prefers accurate words so nobody expects zk-SNARKs.
 
-I’d still add hardware keys or a real recovery story before I’d recommend this to non-me users — but as a learning project, the pipeline **made sense**.
+The internal archive layer walks trees, applies ignore rules, and hands byte slices to `encryption.Encrypt`. Tar or zip wrapping is optional depending on tag; the prototype bias is "one ciphertext blob per top-level folder" so failures localize instead of corrupting a monolith. Auditing scripts diff commit SHAs before and after runs because the worst failure mode is a green CI job that pushed nothing.
+
+I still treat GitHub as "convenient blob storage with history," not as the trust root. Encryption is a seatbelt for the repo; access control and device hygiene are still the steering wheel.
+
+`Decrypt` failures surface as authentication errors, not as garbage profiles silently written to disk. I would rather the tool be loud and useless than polite and corrupt.
+
+Restore paths print overwrite warnings on purpose. Browser profiles are not merge-friendly artifacts; clobbering without a prompt is how you learn about backups the expensive way.
+
+## After
+
+If this ever leaves my machine, the next bar is boring tests: decrypt vectors generated on another OS, documented rotation, maybe recovery keys. Today it is the minimum envelope I still call trustworthy, not a finished product.

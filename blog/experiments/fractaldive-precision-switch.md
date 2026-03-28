@@ -1,61 +1,92 @@
 ---
-title: "FractalDive: When Float64 Runs Out of Zoom"
+title: "FractalDive: Float64, CUDA, and a BigFloat toggle"
 date: "2025-10-28"
 tags: ["experiments", "julia", "cuda", "numerics"]
-summary: "Deep Mandelbrot zooms eat floating-point precision. I split the pipeline: GPU for normal zoom, BigFloat when pixels stop making sense."
-reading_time: "15 min"
+summary: "The UI exposes high_precision: BigFloat on CPU vs Float64, and it refuses the GPU when BigFloat is on. The engine shares one kernel shape for Mandelbrot and Julia sets."
+reading_time: "5 min"
 ---
 
-Fractal zoom videos look magical until coordinates get so tiny that **double precision** collapses and the set turns into soup. FractalDive was my playground for **dynamic precision**: stay fast where you can, get honest when you can’t.
+Deep Mandelbrot zooms hit a wall where `Float64` cannot separate neighboring pixels in the complex plane. FractalDive is a Julia project with a Makie UI, a CPU threaded renderer, and an optional CUDA path. The interesting design choice is **how the UI picks a numeric type** and how `render_fractal!` dispatches to GPU only when that type is `Float64`. If you add arbitrary precision on GPU later, you will need a different plan; for now the split is explicit and easy to explain.
 
-## Two regimes
+## Generic pixels, smooth iteration, and two backends
 
-```text
-  shallow zoom                    deep zoom
-  -----------                    ---------
-  float64 + CUDA OK     ─────►   BigFloat on CPU
-  (many pixels/sec)              (few pixels/sec, correct)
-```
-
-The trick is **detecting** when you’ve crossed the cliff — distance between neighboring pixels in complex plane vs representable epsilon.
-
-## Velocity Verlet of fractals?
-
-Not quite — but the analogy holds: integrate **view transform** carefully. When the viewport scale underflows, **subdivide** or switch precision rather than pretending.
-
-## CUDA path
-
-For normal exploration:
-
-```text
-kernel: z -> z² + c per pixel
-block/grid scheduling for occupancy
-```
-
-Interruptible rendering matters — users drag sliders; you cancel stale jobs.
-
-## Julia kernel sketch (Mandelbrot-ish)
-
-Not the real kernel — just the “z² + c per pixel” heart:
+`FractalEngine.jl` uses a normalized escape time so bands look less harsh. `mandelbrot_pixel` and `julia_pixel` are generic over `T`, which lets the UI swap `BigFloat` in without forking the algorithm text.
 
 ```julia
-function mandel_kernel(maxiter, z, c)
-    for n in 1:maxiter
-        if abs2(z) > 4.0
-            return n
+@inline function mandelbrot_pixel(c::Complex{T}, max_iter::Int) where {T<:Real}
+    z = complex(zero(T), zero(T))
+    for i in 1:max_iter
+        z = z*z + c
+        if abs2(z) > 16.0
+            return (i + 1.0 - 0.5 * log2(log(abs2(z)))) / max_iter
         end
-        z = z * z + c
     end
-    return maxiter
+    return 0.0
 end
 ```
 
-On GPU you vectorize / batch; on CPU BigFloat you swap `z` for a higher-precision type when the viewport says so. The **control flow** stays the same — only the numeric type changes.
+The CUDA kernel indexes a 2D grid, builds `p` from `x_range` and `y_range`, and calls the same pixel functions. `render_fractal_gpu!` uses 16 by 16 threads and enough blocks to cover the image; it assumes `CuArray` inputs.
 
-## Learnings
+```julia
+function fractal_kernel(output, x_range, y_range, max_iter, is_julia, julia_c)
+    i = (blockIdx().x - 1) * blockDim().x + threadIdx().x
+    j = (blockIdx().y - 1) * blockDim().y + threadIdx().y
+    nx, ny = size(output)
+    if i <= nx && j <= ny
+        p = complex(x_range[i], y_range[j])
+        if is_julia
+            output[i, j] = julia_pixel(p, julia_c, max_iter)
+        else
+            output[i, j] = mandelbrot_pixel(p, max_iter)
+        end
+    end
+    return nothing
+end
+```
 
-- **Hybrid pipelines** are ugly but honest — purity at all costs = minutes per frame.
-- BigFloat is slow — use it as a **scalpel**, not a default hammer.
-- Visual debugging: overlay **precision mode** in the corner so you know why it’s slow.
+Off GPU, `render_fractal!` uses `@threads` over rows, checks an optional `stop_signal` between rows, and calls `yield()` so the UI can breathe.
 
-I still want better automatic scheduling, but the core lesson stuck: **performance and correctness trade along zoom depth**, not just FLOPs.
+```julia
+@threads for j in 1:ny
+    if stop_signal !== nothing && stop_signal[]
+        break
+    end
+    @inbounds for i in 1:nx
+        p = complex(x_range[i], y_range[j])
+        if is_julia
+            output[i, j] = julia_pixel(p, julia_c, max_iter)
+        else
+            output[i, j] = mandelbrot_pixel(p, max_iter)
+        end
+    end
+    yield()
+end
+```
+
+## UI modes, ranges, color, and export
+
+`FractalUI.jl` keeps `high_precision = Observable(false)`. When you flip the toggle, `T` becomes `BigFloat` or `Float64`, and `use_gpu` only stays meaningful when you are not in high precision:
+
+```julia
+T = high_precision[] ? BigFloat : Float64
+# ...
+if use_gpu[] && CUDA.functional() && !high_precision[]
+```
+
+**GPU for speed where doubles are honest**, **CPU BigFloat for depth where they are not**. The UI builds `x_range` and `y_range` from viewport corners. When those ranges shrink below `eps(T)`, neighboring entries collapse to the same float: that is the signal to flip `high_precision` or bump `max_iter`. I treat it as a **user-visible mode** instead of silently switching types mid-drag so recordings stay reproducible. Sliders and `onany` handlers trigger recomputation; `is_rendering` guards against double-starts. Auto iteration can bump `max_iter` when zoom depth increases so black interiors still resolve.
+
+`ColorSchemes.jl` maps normalized escape values to palettes. Washed-out frames often mean linear versus sRGB mismatch, not broken math. `Exporter.jl` dumps PNG sequences for video tools; resolution matches the on-screen framebuffer, and whatever format you pick should keep the same `render_fractal!` contract so batch renders match the window. I lost an afternoon once to export using a stale `max_iter` default.
+
+`CUDA.functional()` checks driver and device; laptops without NVIDIA stay on threaded CPU mode without user intervention. `FractalDive.jl` loads submodules and starts the UI; `runtests.jl` exercises engine functions without a display when possible. CUDA.jl and Makie pin versions tightly; I update them together when upgrading Julia.
+
+## After
+
+FractalDive is a playground. The code I reread is the generic `*_pixel` plus the dispatch in `render_fractal!`. The hard part is not typing `BigFloat`; it is knowing **when** you need it.
+
+Julia's generics paid for themselves the first time I flipped Julia set mode without duplicating the escape loop. The CUDA path stays boring on purpose: same math, different allocator. If the kernel ever diverges from CPU for the same inputs, I assume the bug is range construction or a stale buffer, not transcendental identities.
+
+Makie redraw cost dominates some sessions more than the fractal math. That is a reminder that "scientific" UIs are still UIs: throttle observables before you optimize the inner loop.
+
+Recording a zoom video taught me more about float precision than any textbook paragraph: you see banding appear in real time when `x_range` stops moving but the pixels still think they are adjacent.
+
+I keep CUDA and CPU renders of the same viewport in regression folders. Bitwise equality is too strict because of thread order; max absolute error thresholds catch the bugs that matter for demos.

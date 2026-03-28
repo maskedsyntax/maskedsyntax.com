@@ -1,11 +1,50 @@
 import MarkdownIt from "markdown-it";
+import { escapeHtml, unescapeAll } from "markdown-it/lib/common/utils.mjs";
 import type { BlogPostMeta } from "../types";
+import { highlightCode } from "./md-highlight";
 
 const md = new MarkdownIt({
   html: true,
   linkify: true,
-  typographer: true,
+  typographer: false,
+  highlight(str, lang) {
+    return highlightCode(str, lang);
+  },
 });
+
+md.renderer.rules.fence = (tokens, idx, options, _env, _slf) => {
+  const token = tokens[idx];
+  if (!token) {
+    return "";
+  }
+  const info = token.info ? unescapeAll(token.info).trim() : "";
+  let langName = "";
+  if (info) {
+    const arr = info.split(/(\s+)/g);
+    langName = arr[0] ?? "";
+  }
+
+  let highlighted: string;
+  if (options.highlight) {
+    highlighted =
+      options.highlight(token.content, langName, info.split(/\s+/).slice(2).join(" ")) ||
+      escapeHtml(token.content);
+  } else {
+    highlighted = escapeHtml(token.content);
+  }
+
+  if (highlighted.indexOf("<pre") === 0) {
+    return `${highlighted}\n`;
+  }
+
+  const langPrefix = options.langPrefix ?? "language-";
+  let codeClass = "hljs";
+  if (info && langName) {
+    codeClass += ` ${langPrefix}${escapeHtml(langName)}`;
+  }
+
+  return `<pre class="hljs"><code class="${codeClass}">${highlighted}</code></pre>\n`;
+};
 
 const modules = import.meta.glob("/blog/**/*.md", {
   query: "?raw",

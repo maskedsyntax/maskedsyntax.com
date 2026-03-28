@@ -8,6 +8,21 @@
   --muted: #636873;
   --border: #dbdde3;
   --accent: #2f55f6;
+  /* Code fences (highlight.js), light */
+  --hljs-fg: #24292f;
+  --hljs-bg: #f0f2f5;
+  --hljs-border: #d0d7de;
+  --hljs-kw: #cf222e;
+  --hljs-str: #0a3069;
+  --hljs-num: #0550ae;
+  --hljs-comm: #6e7781;
+  --hljs-title: #953800;
+  --hljs-fn: #6639ba;
+  --hljs-built: #8250df;
+  --hljs-meta: #6e7781;
+  --hljs-attr: #0550ae;
+  --hljs-add: #116329;
+  --hljs-del: #82071e;
 }
 
 :root[data-theme="dark"] {
@@ -17,6 +32,20 @@
   --muted: #9ca3af;
   --border: #232429;
   --accent: #8ea0ff;
+  --hljs-fg: #e6edf3;
+  --hljs-bg: #161b22;
+  --hljs-border: #30363d;
+  --hljs-kw: #ff7b72;
+  --hljs-str: #a5d6ff;
+  --hljs-num: #79c0ff;
+  --hljs-comm: #8b949e;
+  --hljs-title: #ffa657;
+  --hljs-fn: #d2a8ff;
+  --hljs-built: #ffa657;
+  --hljs-meta: #8b949e;
+  --hljs-attr: #79c0ff;
+  --hljs-add: #3fb950;
+  --hljs-del: #f85149;
 }
 
 * {
@@ -163,24 +192,91 @@ a {
   margin: 2rem auto;
   border-radius: 0.5rem;
   border: 1px solid var(--border);
+  background: var(--card);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--text) 6%, transparent);
 }
 
-.prose-content pre {
-  background: #0f172a;
-  color: #e2e8f0;
+.prose-content pre.hljs {
+  background: var(--hljs-bg);
+  color: var(--hljs-fg);
   padding: 1.25rem 1.5rem;
   border-radius: 0.5rem;
   overflow-x: auto;
   font-size: 0.92em;
   line-height: 1.65;
   margin: 1.75rem 0;
-  border: 1px solid #1e293b;
+  border: 1px solid var(--hljs-border);
 }
 
-.prose-content pre code {
+.prose-content pre.hljs code.hljs {
   background: transparent;
   padding: 0;
   font-size: inherit;
+  color: inherit;
+}
+
+/* highlight.js token colors (theme follows :root / data-theme) */
+.prose-content pre.hljs .hljs-keyword,
+.prose-content pre.hljs .hljs-selector-tag,
+.prose-content pre.hljs .hljs-meta .hljs-keyword {
+  color: var(--hljs-kw);
+}
+
+.prose-content pre.hljs .hljs-string,
+.prose-content pre.hljs .hljs-regexp,
+.prose-content pre.hljs .hljs-meta .hljs-string {
+  color: var(--hljs-str);
+}
+
+.prose-content pre.hljs .hljs-number,
+.prose-content pre.hljs .hljs-literal {
+  color: var(--hljs-num);
+}
+
+.prose-content pre.hljs .hljs-comment,
+.prose-content pre.hljs .hljs-quote,
+.prose-content pre.hljs .hljs-doctag {
+  color: var(--hljs-comm);
+}
+
+.prose-content pre.hljs .hljs-title,
+.prose-content pre.hljs .hljs-section {
+  color: var(--hljs-title);
+}
+
+.prose-content pre.hljs .hljs-title.function_,
+.prose-content pre.hljs .hljs-function {
+  color: var(--hljs-fn);
+}
+
+.prose-content pre.hljs .hljs-built_in,
+.prose-content pre.hljs .hljs-name {
+  color: var(--hljs-built);
+}
+
+.prose-content pre.hljs .hljs-attr,
+.prose-content pre.hljs .hljs-attribute,
+.prose-content pre.hljs .hljs-variable,
+.prose-content pre.hljs .hljs-template-variable {
+  color: var(--hljs-attr);
+}
+
+.prose-content pre.hljs .hljs-type,
+.prose-content pre.hljs .hljs-class {
+  color: var(--hljs-title);
+}
+
+.prose-content pre.hljs .hljs-meta,
+.prose-content pre.hljs .hljs-subst {
+  color: var(--hljs-meta);
+}
+
+.prose-content pre.hljs .hljs-addition {
+  color: var(--hljs-add);
+}
+
+.prose-content pre.hljs .hljs-deletion {
+  color: var(--hljs-del);
 }
 
 .prose-content :not(pre) > code {

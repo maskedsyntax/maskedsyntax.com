@@ -9,7 +9,17 @@ const post = computed(() => getPostBySlug(String(route.params.slug)));
 </script>
 
 <template>
-  <article v-if="post" class="blog-post mx-auto w-full max-w-[52rem] px-1 sm:px-2">
+  <div v-if="post" class="blog-post mx-auto w-full max-w-[52rem] px-1 sm:px-2">
+    <nav class="mb-8" aria-label="Blog navigation">
+      <RouterLink
+        to="/blog"
+        class="inline-flex items-center gap-2 rounded-sm border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm text-[var(--text)] transition-colors hover:border-[var(--accent)]/60 hover:text-[var(--accent)]"
+      >
+        <span aria-hidden="true">←</span>
+        Back to blog
+      </RouterLink>
+    </nav>
+    <article>
     <header class="mb-12 border-b border-[var(--border)] pb-10">
       <p class="mb-3 text-xs uppercase tracking-wide text-[var(--muted)]">
         {{ post.category }} · {{ post.date }} · {{ post.readingTime }}
@@ -18,6 +28,27 @@ const post = computed(() => getPostBySlug(String(route.params.slug)));
       <p class="text-lg leading-relaxed text-[var(--muted)] sm:text-xl">{{ post.summary }}</p>
     </header>
     <div class="prose-content" v-html="post.content" />
-  </article>
-  <p v-else>Post not found.</p>
+    </article>
+    <div class="mt-14 border-t border-[var(--border)] pt-10">
+      <RouterLink
+        to="/blog"
+        class="inline-flex items-center gap-2 rounded-sm border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm text-[var(--text)] transition-colors hover:border-[var(--accent)]/60 hover:text-[var(--accent)]"
+      >
+        <span aria-hidden="true">←</span>
+        Back to blog
+      </RouterLink>
+    </div>
+  </div>
+  <div v-else class="mx-auto w-full max-w-[52rem] px-1 sm:px-2">
+    <nav class="mb-6" aria-label="Blog navigation">
+      <RouterLink
+        to="/blog"
+        class="inline-flex items-center gap-2 rounded-sm border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm text-[var(--text)] transition-colors hover:border-[var(--accent)]/60 hover:text-[var(--accent)]"
+      >
+        <span aria-hidden="true">←</span>
+        Back to blog
+      </RouterLink>
+    </nav>
+    <p>Post not found.</p>
+  </div>
 </template>
