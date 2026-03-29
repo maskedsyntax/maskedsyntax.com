@@ -12,7 +12,7 @@ export const profile = {
   homeIntro:
     "Most of what I build lives on disk next to you: CLIs, chunky desktop apps, stuff that doesn’t need a login wall. I like code I can grep six months later without cringing.",
   homeFocus:
-    "Right now I’m poking at search (the “find it in 50 repos” kind), shaving time off boring hot paths, and dragging notebook hacks into pipelines that still work when the CSV is ugly.",
+    "Lately most of my ML work is data-first: pre-training checks, wide messy tables, and turning notebook experiments into pipelines that survive bad exports. That is the lane I am in at Cachevector, including HashPrep. On the systems side I ship local-first Rust and Go tools: terminal UIs, small native GUIs when it fits, parallel scan and search without a background indexer, and startup and disk IO that stay fast for daily use.",
   /** Shown on home: this site vs hire-oriented web/mobile profile */
   homeTwoSitesNote:
     "I still take web + mobile client work, I just don’t advertise it here because it’d feel weird next to a pile of Rust screenshots. That stuff’s on",
