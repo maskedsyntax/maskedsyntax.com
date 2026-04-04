@@ -2,11 +2,11 @@
 title: "HARM: ARM7 stepping as a pure state machine"
 date: "2025-11-26"
 tags: ["systems", "haskell", "emulation"]
-summary: "HARM is a Haskell ARM7 toy: parse assembly, build an instruction map, resolve labels, then run `runProgram` from a fixed initial CPU. Purity is a debugging tool, not the goal."
+summary: "HARM is a Haskell ARM7 toy: parse assembly, build an instruction map, resolve labels, then run `runProgram` from a fixed initial CPU. Purity makes CPU state easier to trace while the emulator comes together."
 reading_time: "5 min"
 ---
 
-I started HARM because printf-heavy C cores made it hard to answer "what should the flags be after this one instruction?" Haskell does not magically fix ARM semantics, but it forces me to pass an explicit `CPUState` through each step so I cannot "accidentally" reuse a stale register behind my back.
+I started HARM because printf-heavy C cores made it hard to answer "what should the flags be after this one instruction?" Haskell will not fix ARM semantics for you. It does force an explicit `CPUState` through each step so I cannot "accidentally" reuse a stale register behind my back.
 
 ## From source file to resolved instruction map
 

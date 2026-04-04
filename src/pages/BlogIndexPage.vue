@@ -31,7 +31,7 @@ function goToPage(page: number) {
 <template>
   <SectionShell
     title="Blog"
-    description="Long-form notes from building things: what I tried, what broke, and what stuck. Less paper, more lab notebook — lots of code and sketches along the way."
+    description="Long-form build notes: what I tried, what broke, and what stuck. Lab notebook style, heavy on code and sketches."
   >
     <div class="flex flex-col gap-4">
       <PostCard v-for="post in posts" :key="post.slug" :post="post" />

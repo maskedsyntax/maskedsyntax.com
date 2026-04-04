@@ -48,7 +48,7 @@ void PocketLauncher::load_applications() {
 
 `parse_desktop_file` only cares about `[Desktop Entry]`. It skips comments, reads `Name`, `Exec`, `Icon`, bails on `NoDisplay` or `Hidden`, and strips field codes from `Exec` (`%f`, `%u`, etc.) so `std::system` does not see malformed tails. That keeps dependencies small at the cost of ignoring MIME associations and actions; Pocket only needs a runnable command and a label.
 
-`on_entry_changed` calls `filter_apps`, which clears the `Gtk::ListStore` and rebuilds visible rows from `m_all_apps`. For each match it resolves icons through the theme or disk with a fallback to `application-x-executable`. Yes, each keypress reallocates list rows and hits the icon theme; for a few hundred apps that stayed fine on hardware I use. If it chugs, the next step is not a faster `tolower` but **a filtered index** or pixbuf cache per icon name. I measured before doing that; the simple version won.
+`on_entry_changed` calls `filter_apps`, which clears the `Gtk::ListStore` and rebuilds visible rows from `m_all_apps`. For each match it resolves icons through the theme or disk with a fallback to `application-x-executable`. Yes, each keypress reallocates list rows and hits the icon theme; for a few hundred apps that stayed fine on hardware I use. If it chugs, reach for **a filtered index** or a pixbuf cache per icon name before micro-optimizing `tolower`. I measured before doing that; the simple version won.
 
 ```cpp
 void PocketLauncher::filter_apps() {

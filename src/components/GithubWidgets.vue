@@ -212,7 +212,7 @@ onMounted(async () => {
               {{ repo.description }}
             </p>
             <p class="mt-1 text-xs text-[var(--muted)]">
-              ★ {{ repo.stargazers_count ?? "—" }} · Forks {{ repo.forks_count ?? "—" }} · {{ repo.language ?? "Unknown" }}
+              ★ {{ repo.stargazers_count ?? "n/a" }} · Forks {{ repo.forks_count ?? "n/a" }} · {{ repo.language ?? "Unknown" }}
             </p>
           </li>
         </ul>

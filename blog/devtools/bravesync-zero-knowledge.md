@@ -2,13 +2,13 @@
 title: "BraveSync Lite: encrypt before GitHub sees bytes"
 date: "2026-02-20"
 tags: ["devtools", "go", "security", "encryption"]
-summary: "Private repo is not the same as unreadable bytes. This tool is the smallest envelope I trusted for browser profile blobs on Git."
+summary: "A private repo still leaves bytes readable in history. This tool is the smallest envelope I trusted for browser profile blobs on Git."
 reading_time: "5 min"
 ---
 
 ![Encryption Pipeline](/images/blog/bravesync-pipeline.svg)
 
-I wanted backups that could sit in a GitHub repo without shipping plaintext browser profiles. Git is a sync mechanism I already use; the missing piece was ciphertext at rest in history, not a new hosted vault with another login. Not because I think GitHub staff read my trees for fun, but because **forks happen, visibility toggles happen, and laptops get stolen**. BraveSync Lite is a small Go utility that encrypts before bytes leave the machine: random salt, random nonce, Argon2id to stretch a passphrase, AES-256-GCM to authenticate ciphertext. The host sees opaque blobs. That is **client-side encryption** in the plain English sense. It is not a formal zero-knowledge proof system, and I am tired of marketing words that pretend those are the same thing.
+I wanted backups that could sit in a GitHub repo without shipping plaintext browser profiles. I already sync with Git; I needed ciphertext at rest in history instead of another hosted vault and login. **Forks happen, visibility toggles happen, and laptops get stolen**, and those are the failure modes I designed for. BraveSync Lite is a small Go utility that encrypts before bytes leave the machine: random salt, random nonce, Argon2id to stretch a passphrase, AES-256-GCM to authenticate ciphertext. The host sees opaque blobs. That is **client-side encryption** in the plain English sense. It is not a formal zero-knowledge proof system. Vendors blur those phrases; I try not to.
 
 ## The envelope
 

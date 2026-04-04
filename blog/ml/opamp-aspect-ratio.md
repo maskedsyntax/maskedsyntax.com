@@ -34,7 +34,7 @@ Start from PDK defaults for layers and grids. Run DRC early and often, not only 
 
 DRC proves geometry. LVS proves connectivity. Passing DRC but failing LVS still ships broken silicon. We used commercial layout editors with PDK techfiles from the department; export to GDSII matched what teaching assistants ran. Open-source PDKs such as SkyWater exist now; the checklist is the same when layer names change.
 
-Outside the PDK I used Python notebooks to plot resistor ratios against drawn length. The notebook is not in this workspace, but the habit stuck: **measure geometry, do not guess**.
+Outside the PDK I used Python notebooks to plot resistor ratios against drawn length. The notebook is not in this workspace. The habit stuck: **measure geometry, do not guess**.
 
 ## After the course
 
@@ -42,4 +42,4 @@ I am still early in analog layout. The mindset shift was to stop treating the ca
 
 Tapeout stories from industry guests landed harder than any slide deck: the cost of a metal short versus the cost of a missed timing closure. School labs compress that into DRC counts, but the emotional lesson is the same. Clean decks are how you sleep.
 
-I keep old GDS exports in cold storage not for nostalgia but because comparing layer counts between semesters shows how fast PDK revisions move. The vocabulary stays stable even when the numbers change.
+I keep old GDS exports in cold storage to compare layer counts between semesters. That shows how fast PDK revisions move. The vocabulary stays stable even when the numbers change.

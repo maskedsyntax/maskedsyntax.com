@@ -8,7 +8,7 @@ export const profile = {
   name: "Aftaab Siddiqui",
   handle: "MaskedSyntax",
   bio: "Making tools. Building at the edge of ML and systems.",
-  role: "Systems + ML, one head. I’d rather ship a scrappy tool than finish a tutorial playlist.",
+  role: "Systems and ML. I ship small tools I can still read six months later.",
   homeIntro:
     "Most of what I build lives on disk next to you: CLIs, chunky desktop apps, stuff that doesn’t need a login wall. I like code I can grep six months later without cringing.",
   homeFocus:

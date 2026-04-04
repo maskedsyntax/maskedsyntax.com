@@ -8,7 +8,7 @@ import { projectsForProjectsPage } from "../data/projects";
 <template>
   <SectionShell
     title="Projects"
-    description="More work beyond the homepage highlights — systems, tools, and experiments that did not fit the featured grid."
+    description="More beyond the homepage grid: systems, tools, and experiments that did not fit the featured set."
   >
     <div class="grid gap-4 md:grid-cols-2">
       <ProjectCard v-for="project in projectsForProjectsPage" :key="project.slug" :project="project" />

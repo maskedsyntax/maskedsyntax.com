@@ -87,7 +87,7 @@ import ThemeToggle from "./ThemeToggle.vue";
           rel="noreferrer"
           class="inline-flex h-10 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-md text-[var(--muted)] transition-colors hover:bg-[var(--bg)] hover:text-[var(--text)] active:scale-[0.97]"
           aria-label="GitHub profile (opens in new tab)"
-          title="GitHub — opens in new tab"
+          title="GitHub (opens in new tab)"
         >
           <Github :size="18" :stroke-width="2" class="shrink-0" />
         </a>
@@ -122,7 +122,7 @@ import ThemeToggle from "./ThemeToggle.vue";
           rel="noreferrer"
           class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-[var(--border)] bg-[var(--card)] text-[var(--text)] transition-colors hover:border-[var(--accent)]"
           aria-label="GitHub profile (opens in new tab)"
-          title="GitHub — opens in new tab"
+          title="GitHub (opens in new tab)"
         >
           <Github :size="16" />
         </a>

@@ -75,7 +75,7 @@ I freeze tiny mazes with known shortest path lengths; regression tests once caug
 
 If you only remember one thing: **admissible heuristics match your move set**, or you will ship subtle suboptimality.
 
-The heap tuple shape `(f, g, x, y, node)` is not pretty, but it stopped nondeterministic screenshots in lecture slides. Students notice when the frontier looks different between runs on the same maze; that noise is a teaching bug.
+The heap tuple shape `(f, g, x, y, node)` is ugly; it stopped nondeterministic screenshots in lecture slides. Students notice when the frontier looks different between runs on the same maze; that noise is a teaching bug.
 
 Weighted grids connect cleanly to games with terrain costs. I keep the unweighted version in the repo as the reference implementation and layer weights in branches that need them so regressions have a simple baseline.
 

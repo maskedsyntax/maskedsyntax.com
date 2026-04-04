@@ -6,7 +6,7 @@ export type ShippedProduct = {
   description: string;
 };
 
-/** Shipped Work — order is intentional */
+/** Shipped Work (order is intentional) */
 export const shippedWork: ShippedProduct[] = [
   {
     name: "Trelay",
@@ -22,7 +22,7 @@ export const shippedWork: ShippedProduct[] = [
     websiteLabel: "hashprep.com",
     githubUrl: "https://github.com/cachevector/hashprep",
     description:
-      "Dataset profiler and debugger for machine learning — pre-training quality checks, rich reports, and reproducible fixes.",
+      "Dataset profiler and debugger for machine learning: pre-training quality checks, rich reports, and reproducible fixes.",
   },
   {
     name: "LofiKofi",
@@ -38,7 +38,7 @@ export const shippedWork: ShippedProduct[] = [
     websiteLabel: "repogrep.maskedsyntax.com",
     githubUrl: "https://github.com/maskedsyntax/repogrep",
     description:
-      "Local-first multi-repo code search — fast parallel scanning, no indexing, three-pane previews.",
+      "Local-first multi-repo code search: fast parallel scanning, no indexing, three-pane previews.",
   },
   {
     name: "Patterns",
@@ -46,7 +46,7 @@ export const shippedWork: ShippedProduct[] = [
     websiteLabel: "patterns.maskedsyntax.com",
     githubUrl: "https://github.com/maskedsyntax/patterns",
     description:
-      "Clarity through structured reflection — offline-first journaling and OCD pattern tracking for desktop.",
+      "Clarity through structured reflection: offline-first journaling and OCD pattern tracking for desktop.",
   },
   {
     name: "Botttle",
