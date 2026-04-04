@@ -7,18 +7,10 @@ import ThemeToggle from "./ThemeToggle.vue";
   <header
     class="sticky top-0 z-10 border-b border-[var(--border)] bg-[var(--bg)]/92 pt-[env(safe-area-inset-top,0px)] backdrop-blur"
   >
-    <!-- Mobile: centered brand + toolbar (md+ hidden) -->
+    <!-- Mobile: toolbar at top (md+ hidden) -->
     <div
-      class="mx-auto flex w-full max-w-[1180px] flex-col items-center gap-2.5 px-4 py-3 md:hidden"
+      class="mx-auto flex w-full max-w-[1180px] justify-center px-4 py-2.5 md:hidden"
     >
-      <RouterLink
-        to="/"
-        class="shrink-0 text-sm font-semibold tracking-tight text-[var(--text)]"
-        style="font-family: 'Space Mono', ui-monospace, SFMono-Regular, Menlo, monospace;"
-      >
-        MaskedSyntax
-      </RouterLink>
-
       <nav
         class="inline-flex max-w-full items-center gap-1 rounded-xl border border-[var(--border)] bg-[var(--card)]/95 px-1.5 py-1.5 shadow-sm backdrop-blur-sm"
         aria-label="Primary"
