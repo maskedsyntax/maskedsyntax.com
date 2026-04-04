@@ -70,6 +70,11 @@ body {
   background: var(--bg);
 }
 
+a,
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
 h1,
 h2,
 h3,
@@ -88,6 +93,12 @@ a {
 
 .shell-frame {
   border-inline: 1px solid var(--border);
+}
+
+@media (max-width: 639px) {
+  .shell-frame {
+    border-inline: none;
+  }
 }
 
 /* Blog index card summary: trim without relying on tailwind line-clamp plugin */
@@ -130,10 +141,28 @@ a {
   transform: scaleX(1);
 }
 
+/* Header: text nav only from md up (icons below md). Beats .nav-link { display } without !important. */
+.nav-link.nav-link-desktop-only {
+  display: none;
+}
+
+@media (min-width: 48rem) {
+  .nav-link.nav-link-desktop-only {
+    display: inline-block;
+  }
+}
+
 /* Blog article body: roomy, readable, code-forward */
 .blog-post .prose-content {
   font-size: 1.125rem;
   line-height: 1.75;
+}
+
+@media (max-width: 639px) {
+  .blog-post .prose-content {
+    font-size: 1rem;
+    line-height: 1.7;
+  }
 }
 
 .prose-content h2 {
@@ -158,6 +187,7 @@ a {
 
 .prose-content p {
   margin-bottom: 1.25rem;
+  overflow-wrap: anywhere;
 }
 
 .prose-content ul,
@@ -202,10 +232,20 @@ a {
   padding: 1.25rem 1.5rem;
   border-radius: 0.5rem;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
   font-size: 0.92em;
   line-height: 1.65;
   margin: 1.75rem 0;
   border: 1px solid var(--hljs-border);
+}
+
+@media (max-width: 639px) {
+  .prose-content pre.hljs {
+    padding: 1rem;
+    font-size: 0.8125rem;
+    border-radius: 0.375rem;
+  }
 }
 
 .prose-content pre.hljs code.hljs {
@@ -284,6 +324,8 @@ a {
   padding: 0.15em 0.4em;
   border-radius: 0.25rem;
   font-size: 0.9em;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .prose-content code {

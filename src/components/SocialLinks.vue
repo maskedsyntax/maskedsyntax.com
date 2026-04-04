@@ -20,7 +20,7 @@ const brandPaths = {
       :href="link.href"
       target="_blank"
       rel="noreferrer noopener"
-      class="inline-flex h-10 w-10 items-center justify-center rounded-sm border border-[var(--border)] bg-[var(--card)] text-[var(--text)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
+      class="inline-flex h-11 min-h-[44px] min-w-[44px] w-11 items-center justify-center rounded-sm border border-[var(--border)] bg-[var(--card)] text-[var(--text)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)] sm:h-10 sm:min-h-0 sm:min-w-0 sm:w-10"
       :aria-label="link.label"
     >
       <Linkedin v-if="link.icon === 'linkedin'" :size="20" stroke-width="1.75" aria-hidden="true" />

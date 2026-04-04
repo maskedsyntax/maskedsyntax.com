@@ -14,7 +14,7 @@ defineProps<{ project: Project }>();
         {{ tag }}
       </li>
     </ul>
-    <div class="flex items-center gap-4 text-sm">
+    <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
       <a
         v-if="project.repoUrl"
         :href="project.repoUrl"

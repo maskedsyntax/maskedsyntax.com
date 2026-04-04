@@ -9,7 +9,7 @@ const post = computed(() => getPostBySlug(String(route.params.slug)));
 </script>
 
 <template>
-  <div v-if="post" class="blog-post mx-auto w-full max-w-[52rem] px-1 sm:px-2">
+  <div v-if="post" class="blog-post mx-auto w-full min-w-0 max-w-[52rem] px-0 sm:px-2">
     <nav class="mb-8" aria-label="Blog navigation">
       <RouterLink
         to="/blog"
@@ -24,8 +24,10 @@ const post = computed(() => getPostBySlug(String(route.params.slug)));
       <p class="mb-3 text-xs uppercase tracking-wide text-[var(--muted)]">
         {{ post.category }} · {{ post.date }} · {{ post.readingTime }}
       </p>
-      <h1 class="mb-5 text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">{{ post.title }}</h1>
-      <p class="text-lg leading-relaxed text-[var(--muted)] sm:text-xl">{{ post.summary }}</p>
+      <h1 class="mb-5 break-words text-3xl font-semibold leading-tight tracking-tight sm:text-4xl md:text-5xl">
+        {{ post.title }}
+      </h1>
+      <p class="break-words text-base leading-relaxed text-[var(--muted)] sm:text-lg md:text-xl">{{ post.summary }}</p>
     </header>
     <div class="prose-content" v-html="post.content" />
     </article>
@@ -39,7 +41,7 @@ const post = computed(() => getPostBySlug(String(route.params.slug)));
       </RouterLink>
     </div>
   </div>
-  <div v-else class="mx-auto w-full max-w-[52rem] px-1 sm:px-2">
+  <div v-else class="mx-auto w-full min-w-0 max-w-[52rem] px-0 sm:px-2">
     <nav class="mb-6" aria-label="Blog navigation">
       <RouterLink
         to="/blog"
