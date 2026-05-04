@@ -28,8 +28,10 @@ export const profile = {
     twitter: "https://x.com/aftaab___",
     website: "https://aftaab.dev",
     cachevector: "https://cachevector.com",
+    email: "mailto:aftaab@aftaab.dev",
   },
   socialLinks: [
+    { href: "mailto:aftaab@aftaab.dev", label: "Email", icon: "email" as any },
     { href: "https://x.com/aftaab___", label: "X", icon: "x" },
     { href: "https://www.threads.com/@aftaab___", label: "Threads", icon: "threads" },
     { href: "https://www.linkedin.com/in/aftaabsiddiqui/", label: "LinkedIn", icon: "linkedin" },
