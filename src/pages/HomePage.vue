@@ -41,7 +41,7 @@ import { currentlyBuilding, featuredProjects } from "../data/projects";
           target="_blank"
           rel="noreferrer"
           class="font-medium text-[var(--accent)] hover:underline"
-        >aftaab.xyz</a>.
+        >aftaab.dev</a>.
       </p>
       <SocialLinks />
     </article>

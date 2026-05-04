@@ -26,7 +26,7 @@ export const profile = {
   links: {
     github: "https://github.com/maskedsyntax",
     twitter: "https://x.com/aftaab___",
-    website: "https://aftaab.xyz",
+    website: "https://aftaab.dev",
     cachevector: "https://cachevector.com",
   },
   socialLinks: [
