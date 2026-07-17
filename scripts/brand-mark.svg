@@ -1,16 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
-  <rect width="80" height="80" rx="16" fill="#0b0b0c" />
   <path
     d="M 12 48 V 10 H 44 L 48 16 V 28 L 12 48 Z"
     stroke="#ffffff"
-    stroke-width="4.5"
+    stroke-width="3.5"
     stroke-linejoin="miter"
     stroke-linecap="square"
   />
   <path
     d="M 50 64 V 50 L 68 56 V 70 L 50 64 Z"
     stroke="#ffffff"
-    stroke-width="4.5"
+    stroke-width="3.5"
     stroke-linejoin="miter"
     stroke-linecap="square"
   />

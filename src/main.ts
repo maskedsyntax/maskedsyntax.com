@@ -2,6 +2,8 @@ import { createApp } from "vue";
 import { createRouter, createWebHistory } from "vue-router";
 import App from "./App.vue";
 import "./styles.css";
+import { getPostBySlug } from "./lib/blog";
+import { applyPageMeta, metaForPath } from "./lib/seo";
 import {
   AboutPage,
   BlogIndexPage,
@@ -21,6 +23,25 @@ const router = createRouter({
   scrollBehavior() {
     return { top: 0 };
   },
+});
+
+router.afterEach((to) => {
+  if (to.path.startsWith("/blog/") && to.params.slug) {
+    const post = getPostBySlug(String(to.params.slug));
+    if (post) {
+      applyPageMeta({
+        title: post.title,
+        description: post.summary,
+        path: to.path,
+        ogType: "article",
+      });
+      return;
+    }
+    applyPageMeta({ path: to.path, noIndex: true });
+    return;
+  }
+
+  applyPageMeta(metaForPath(to.path));
 });
 
 createApp(App).use(router).mount("#app");

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRoute } from "vue-router";
+import BrandMark from "./BrandMark.vue";
 import ThemeToggle from "./ThemeToggle.vue";
 import { site } from "../data/site";
 
@@ -14,10 +15,10 @@ const isHome = computed(() => route.path === "/");
     :class="{ 'site-header--home': isHome }"
   >
     <div class="site-header__inner shell-frame">
-      <RouterLink to="/" class="site-header__brand">
-        <span class="site-header__prompt" aria-hidden="true">~</span>
+      <RouterLink to="/" class="site-header__brand" aria-label="MaskedSyntax home">
+        <BrandMark class="site-header__mark" :size="30" decorative />
         <span class="site-header__brand-text">
-          {{ isHome ? site.brand.domain : site.brand.wordmark }}
+          <span class="site-header__prompt" aria-hidden="true">~</span>{{ isHome ? site.brand.domain : site.brand.wordmark }}
         </span>
       </RouterLink>
 

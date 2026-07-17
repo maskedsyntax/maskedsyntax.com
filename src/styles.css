@@ -135,13 +135,22 @@ a {
 .site-header__brand {
   display: inline-flex;
   min-width: 0;
-  align-items: baseline;
-  gap: 0.2rem;
+  align-items: center;
+  gap: 0.55rem;
   font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.8125rem;
   color: var(--muted);
   text-decoration: none;
   transition: color 0.15s ease;
+}
+
+.site-header__mark {
+  flex-shrink: 0;
+  color: var(--text);
+}
+
+.site-header--home .site-header__mark {
+  color: var(--text);
 }
 
 @media (min-width: 640px) {
@@ -161,12 +170,19 @@ a {
 .site-header__prompt {
   color: var(--accent);
   font-weight: 600;
+  margin-right: 0.05rem;
 }
 
 .site-header__brand-text {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+@media (max-width: 639px) {
+  .site-header__brand-text {
+    display: none;
+  }
 }
 
 .site-header--home .site-header__brand-text {
