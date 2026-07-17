@@ -1,102 +1,182 @@
 <script setup lang="ts">
-import { ArrowRight } from "lucide-vue-next";
-import ProjectCard from "../components/ProjectCard.vue";
-import SectionShell from "../components/SectionShell.vue";
-import SocialLinks from "../components/SocialLinks.vue";
-import { shippedWork } from "../data/ecosystem";
-import { profile } from "../data/profile";
-import { currentlyBuilding, featuredProjects } from "../data/projects";
+import { site } from "../data/site";
 </script>
 
 <template>
-  <section class="py-10">
-    <article>
-      <div class="mb-5 flex items-center gap-3 sm:gap-4">
-        <img
-          src="https://github.com/maskedsyntax.png?size=160"
-          alt="Aftaab Siddiqui avatar"
-          class="h-14 w-14 shrink-0 rounded-md border border-[var(--border)] object-cover sm:h-16 sm:w-16"
-          loading="lazy"
-          referrerpolicy="no-referrer"
-        />
-        <div class="flex min-w-0 flex-col justify-center">
-          <p
-            class="break-words text-2xl font-semibold leading-tight sm:text-4xl md:text-5xl"
-            style="font-family: 'Space Mono', ui-monospace, SFMono-Regular, Menlo, monospace;"
-          >
-            MaskedSyntax
-          </p>
-          <p class="mt-1 text-sm leading-none text-[var(--muted)] sm:text-base">Aftaab Siddiqui</p>
+  <section class="home-hero">
+    <div class="home-hero__backdrop" aria-hidden="true" />
+
+    <div class="home-hero__frame">
+      <article class="home-hero__panel">
+        <div class="home-hero__chrome" aria-hidden="true">
+          <span /><span /><span />
         </div>
-      </div>
-      <p class="mb-5 break-words text-sm text-[var(--muted)] sm:text-base">{{ profile.role }}</p>
-      <p class="mb-4 max-w-4xl break-words text-sm sm:text-base">{{ profile.homeIntro }}</p>
-      <p class="max-w-4xl break-words text-sm text-[var(--muted)] sm:text-base">{{ profile.homeFocus }}</p>
-      <p
-        class="mt-5 max-w-4xl break-words border-l-2 border-[var(--accent)]/40 pl-3 text-sm leading-relaxed text-[var(--muted)] sm:pl-4 sm:text-base"
-      >
-        {{ profile.homeTwoSitesNote }}
-        <a
-          :href="profile.links.website"
-          target="_blank"
-          rel="noreferrer"
-          class="font-medium text-[var(--accent)] hover:underline"
-        >aftaab.dev</a>.
-      </p>
-      <SocialLinks />
-    </article>
 
-  </section>
-
-  <SectionShell title="Featured Projects" description="Six highlighted projects across tooling, systems, and ML work.">
-    <div class="grid gap-4 md:grid-cols-2">
-      <ProjectCard v-for="project in featuredProjects" :key="project.slug" :project="project" />
-    </div>
-  </SectionShell>
-
-  <SectionShell v-if="currentlyBuilding" title="Currently Building">
-    <article class="rounded-sm border border-[var(--border)] bg-[var(--card)] p-5">
-      <p class="mb-2 text-xs uppercase tracking-wide text-[var(--muted)]">Now</p>
-      <h3 class="mb-2 text-xl font-semibold">{{ currentlyBuilding.name }}</h3>
-      <p class="mb-2 text-sm text-[var(--muted)]">{{ currentlyBuilding.tagline }}</p>
-      <p class="text-[var(--muted)]">{{ currentlyBuilding.description }}</p>
-      <a v-if="currentlyBuilding.repoUrl" :href="currentlyBuilding.repoUrl" target="_blank" rel="noreferrer" class="mt-4 inline-flex items-center gap-2 text-sm text-[var(--accent)] hover:underline">
-        Follow progress
-        <ArrowRight :size="14" />
-      </a>
-    </article>
-  </SectionShell>
-
-  <SectionShell title="Shipped Work">
-    <div class="grid gap-3 md:grid-cols-2">
-      <article
-        v-for="item in shippedWork"
-        :key="item.name"
-        class="rounded-sm border border-[var(--border)] bg-[var(--card)] p-4 transition-colors hover:border-[var(--accent)]"
-      >
-        <h3 class="mb-1 text-base font-semibold">{{ item.name }}</h3>
-        <p class="mb-3 text-sm text-[var(--muted)]">{{ item.description }}</p>
-        <div class="flex flex-wrap gap-x-4 gap-y-2 text-sm">
-          <a
-            :href="item.websiteUrl"
-            target="_blank"
-            rel="noreferrer"
-            class="inline-flex items-center gap-1 text-[var(--accent)] hover:underline"
-          >
-            {{ item.websiteLabel }}
-            <span aria-hidden="true">↗</span>
-          </a>
-          <a
-            :href="item.githubUrl"
-            target="_blank"
-            rel="noreferrer"
-            class="inline-flex items-center gap-1 text-[var(--accent)] hover:underline"
-          >
-            GitHub
-            <span aria-hidden="true">↗</span>
-          </a>
+        <div class="home-hero__body">
+          <p class="home-hero__eyebrow">alias</p>
+          <h1 class="home-hero__title">{{ site.brand.wordmark }}</h1>
+          <div class="home-hero__rule" aria-hidden="true" />
+          <p class="home-hero__tagline">
+            <span class="home-hero__prompt" aria-hidden="true">›</span>
+            {{ site.brand.tagline }}
+          </p>
         </div>
       </article>
     </div>
-  </SectionShell>
+  </section>
 </template>
+
+<style scoped>
+.home-hero {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin-inline: -1rem;
+  padding: 0 1rem 2rem;
+  overflow: hidden;
+}
+
+@media (min-width: 640px) {
+  .home-hero {
+    margin-inline: -1.5rem;
+    padding-inline: 1.5rem;
+    padding-bottom: 3rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .home-hero {
+    margin-inline: -2.5rem;
+    padding-inline: 2.5rem;
+    padding-bottom: 4rem;
+  }
+}
+
+.home-hero__backdrop {
+  position: absolute;
+  inset: -20% -10% 0;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--border) 55%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--border) 55%, transparent) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(ellipse 85% 75% at 18% 82%, black 15%, transparent 72%);
+  pointer-events: none;
+}
+
+.home-hero__frame {
+  position: relative;
+  z-index: 1;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.home-hero__panel {
+  width: fit-content;
+  max-width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  background: color-mix(in srgb, var(--card) 92%, var(--bg));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent) 8%, transparent),
+    0 24px 48px -24px color-mix(in srgb, var(--text) 18%, transparent);
+}
+
+.home-hero__chrome {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 65%, var(--card));
+}
+
+.home-hero__chrome span {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--muted) 18%, var(--card));
+}
+
+.home-hero__chrome span:first-child {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  background: color-mix(in srgb, var(--accent) 22%, var(--card));
+}
+
+.home-hero__body {
+  padding: 1.35rem 1.25rem 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .home-hero__body {
+    padding: 1.65rem 1.5rem 1.85rem;
+  }
+}
+
+.home-hero__eyebrow {
+  margin: 0 0 0.65rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.home-hero__title {
+  margin: 0;
+  font-family: "Space Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: clamp(1.85rem, 5vw, 2.65rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.home-hero__rule {
+  width: 2.75rem;
+  height: 2px;
+  margin: 1.1rem 0 1rem;
+  background: var(--accent);
+}
+
+.home-hero__tagline {
+  margin: 0;
+  font-size: clamp(0.8125rem, 2.5vw, 1.0625rem);
+  line-height: 1.55;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.home-hero__prompt {
+  margin-right: 0.35rem;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .home-hero__panel {
+    animation: home-panel-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .home-hero__tagline {
+    animation: home-tagline-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
+  }
+}
+
+@keyframes home-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@keyframes home-tagline-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+</style>

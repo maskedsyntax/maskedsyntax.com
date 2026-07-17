@@ -3,6 +3,7 @@ import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import PostCard from "../components/PostCard.vue";
 import SectionShell from "../components/SectionShell.vue";
+import { site } from "../data/site";
 import { getAllPosts } from "../lib/blog";
 
 const PAGE_SIZE = 5;
@@ -30,8 +31,8 @@ function goToPage(page: number) {
 
 <template>
   <SectionShell
-    title="Blog"
-    description="Long-form build notes: what I tried, what broke, and what stuck. Lab notebook style, heavy on code and sketches."
+    :title="site.buildNotes.title"
+    :description="site.buildNotes.description"
   >
     <div class="flex flex-col gap-4">
       <PostCard v-for="post in posts" :key="post.slug" :post="post" />

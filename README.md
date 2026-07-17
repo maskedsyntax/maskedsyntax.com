@@ -1,3 +1,3 @@
-# MaskedSyntax Portfolio
+# MaskedSyntax
 
-Portfolio site for Aftaab Siddiqui (MaskedSyntax), built with Vue 3, Vite, and Tailwind CSS.
+MaskedSyntax — small tools built for everyday use. Vue 3, Vite, Tailwind CSS.
