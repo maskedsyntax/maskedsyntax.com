@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BrandMark from "../components/BrandMark.vue";
 import { site } from "../data/site";
 </script>
 
@@ -14,7 +15,10 @@ import { site } from "../data/site";
 
         <div class="home-hero__body">
           <p class="home-hero__eyebrow">alias</p>
-          <h1 class="home-hero__title">{{ site.brand.wordmark }}</h1>
+          <div class="home-hero__identity">
+            <BrandMark class="home-hero__mark" :size="64" decorative />
+            <h1 class="home-hero__title">{{ site.brand.wordmark }}</h1>
+          </div>
           <div class="home-hero__rule" aria-hidden="true" />
           <p class="home-hero__tagline">
             <span class="home-hero__prompt" aria-hidden="true">›</span>
@@ -124,6 +128,19 @@ import { site } from "../data/site";
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--muted);
+}
+
+.home-hero__identity {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.home-hero__mark {
+  flex: 0 0 auto;
+  width: clamp(3rem, 9vw, 4rem);
+  height: auto;
+  color: var(--text);
 }
 
 .home-hero__title {

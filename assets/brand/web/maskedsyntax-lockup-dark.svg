@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 160" role="img" aria-labelledby="title desc">
+  <title id="title">MaskedSyntax logo for dark backgrounds</title>
+  <desc id="desc">The MaskedSyntax woven modular mark beside the MaskedSyntax wordmark.</desc>
+  <g transform="translate(16 16) scale(1)">
+    <path fill="#F7F7F8" d="M18 20 68 49 54 57v53L18 89V20Z"/>
+    <path fill="#3B5BFF" d="m47 51 63-33v46L78 82V65l-9-5v34L47 81V51Z"/>
+    <path fill="#F7F7F8" d="m74 62 36 21v27H74V62Z"/>
+  </g>
+  <text x="170" y="102" fill="#F7F7F8" font-family="'Space Mono', 'SpaceMono Nerd Font', ui-monospace, monospace" font-size="64" font-weight="700" letter-spacing="-3">MaskedSyntax</text>
+</svg>

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">MaskedSyntax YouTube avatar</title>
+  <desc id="desc">The MaskedSyntax woven modular mark on a dark gridded field.</desc>
+  <defs>
+    <pattern id="grid" width="64" height="64" patternUnits="userSpaceOnUse">
+      <path d="M64 0H0V64" fill="none" stroke="#1B1D26" stroke-width="2"/>
+    </pattern>
+    <radialGradient id="halo" cx="50%" cy="47%" r="48%">
+      <stop offset="0" stop-color="#3B5BFF" stop-opacity=".18"/>
+      <stop offset="1" stop-color="#3B5BFF" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="#090A0E"/>
+  <rect width="1024" height="1024" fill="url(#grid)" opacity=".7"/>
+  <rect width="1024" height="1024" fill="url(#halo)"/>
+  <circle cx="512" cy="512" r="348" fill="#0E1016" stroke="#272A36" stroke-width="4"/>
+  <circle cx="512" cy="512" r="306" fill="none" stroke="#3B5BFF" stroke-opacity=".22" stroke-width="3" stroke-dasharray="12 20"/>
+  <g transform="translate(224 224) scale(4.5)">
+    <path fill="#F7F7F8" d="M18 20 68 49 54 57v53L18 89V20Z"/>
+    <path fill="#3B5BFF" d="m47 51 63-33v46L78 82V65l-9-5v34L47 81V51Z"/>
+    <path fill="#F7F7F8" d="m74 62 36 21v27H74V62Z"/>
+  </g>
+</svg>

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">MaskedSyntax adaptive mark</title>
+  <desc id="desc">A woven modular monogram with concealed and revealed layers.</desc>
+  <style>
+    .accent { fill: #3B5BFF; }
+    .ink { fill: #0B0C10; }
+    @media (prefers-color-scheme: dark) { .ink { fill: #F7F7F8; } }
+  </style>
+  <path class="ink" d="M18 20 68 49 54 57v53L18 89V20Z"/>
+  <path class="accent" d="m47 51 63-33v46L78 82V65l-9-5v34L47 81V51Z"/>
+  <path class="ink" d="m74 62 36 21v27H74V62Z"/>
+</svg>

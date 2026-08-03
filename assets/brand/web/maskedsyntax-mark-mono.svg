@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">MaskedSyntax monochrome mark</title>
+  <desc id="desc">A woven modular monogram with concealed and revealed layers.</desc>
+  <g fill="#0B0C10">
+    <path d="M18 20 68 49 54 57v53L18 89V20Z"/>
+    <path d="m47 51 63-33v46L78 82V65l-9-5v34L47 81V51Z"/>
+    <path d="m74 62 36 21v27H74V62Z"/>
+  </g>
+</svg>
